@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ArrowUpRight, BarChart3, Calendar, Users } from "lucide-react";
@@ -47,7 +47,7 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
   }, [priority]);
   
   return (
-    <Link to={`/fundee/${fundee.id}`}>
+    <Link href={`/fundee/${fundee.id}`}>
       <Card 
         className={cn(
           "card-hover overflow-hidden border bg-card h-full",

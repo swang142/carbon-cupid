@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { LogIn, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Image from 'next/image'
 import ProfileDropdown from './ProfileDropdown'
 const navigationItems =  [
@@ -28,7 +30,7 @@ const navigationItems =  [
 ]
 const Navbar = ({props}: {props: any}) => {
     const pathname = usePathname()
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(true)
 
   return (
     <nav className="flex justify-between items-center p-4 relative">
@@ -36,12 +38,12 @@ const Navbar = ({props}: {props: any}) => {
         <div>
             Logo
         </div>
-        <NavRight pathname={pathname} />
+        <NavRight pathname={pathname} isLoggedIn={isLoggedIn} />
     </nav>
   )
 }
 
-const NavRight = ( {pathname}: {pathname: string}) => {
+const NavRight = ( {pathname, isLoggedIn}: {pathname: string, isLoggedIn: boolean}) => {
     return (
         <div className="flex items-center gap-6 px-10">
             {navigationItems.map((item) => (
@@ -51,7 +53,14 @@ const NavRight = ( {pathname}: {pathname: string}) => {
                 </Link>
             ))}
             <div className="flex items-center gap-2 px-2">
-                {/* Login Button */}
+                {!isLoggedIn && (
+                    <Button asChild variant="ghost" size="sm" className="gap-2 transition-all duration-300">
+                        <Link href="/login">
+                        <LogIn className="h-4 w-4" />
+                        <span>Login</span>
+                        </Link>
+                    </Button>
+                )}
                 <ProfileDropdown />
             </div>
             
@@ -60,5 +69,4 @@ const NavRight = ( {pathname}: {pathname: string}) => {
 }
 
 
-export default Navbar
-
+ export default Navbar

@@ -19,13 +19,13 @@ const ProfileDropdown = () => {
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <button className='w-8 h=8 rounded-full overflow-hidden'>
-        <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>
-                test
-            </AvatarFallback>
-        </Avatar>
+            <button className='w-10 h-10 rounded-full overflow-hidden transition-transform hover:scale-105 cursor-pointer'>
+                <Avatar>
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>
+                        test
+                    </AvatarFallback>
+                </Avatar>
     </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
