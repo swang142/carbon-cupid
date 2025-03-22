@@ -28,7 +28,7 @@ const navigationItems =  [
     }
     
 ]
-const Navbar = ({props}: {props: any}) => {
+const Navbar = ({children}: {children: React.ReactNode}) => {
     const pathname = usePathname()
     const [isLoggedIn, setIsLoggedIn] = useState(true)
 

@@ -57,9 +57,13 @@ export default function FundeesPage() {
         <div className="container px-4 py-8 md:py-12">
           <div className="max-w-screen-2xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {/* Filter Section - Desktop */}
               
-              {/* Main Content */}
+            <div className="md:col-span-3 lg:col-span-2">
+                  <div className="sticky top-24">
+                    <FundeeFilter onFiltersChange={handleFiltersChange} />
+                  </div>
+                </div>
+                
               <div className="md:col-span-9 lg:col-span-10">
                 <div className="flex flex-col gap-8">
                   <div className="flex flex-col gap-4">

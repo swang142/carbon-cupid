@@ -16,6 +16,40 @@ const logos = [
   "https://via.placeholder.com/150/BF5AF2/FFFFFF?text=FoodFresh",
 ];
 
+/*
+const filterCategories = [
+  {
+    id: "stage",
+    name: "Stage",
+    options: ["Seed", "Pre-Seed", "Growth"],
+  },
+  {
+    id: "technology",
+    name: "Technology",
+    options: ["Electrochemical CDR", "Microalgae Cultivation", "Carbon Sequestration", "Macroalgae Cultivation", "Ocean Alkalinity Enhancement", "Blue Carbon Restoration"],
+  },
+  {
+    id: "funding",
+    name: "Funding Needed",
+    options: ["<$500K", "$500K-$1M", "$1M-$5M", "$5M-$10M", ">$10M"],
+  },
+  {
+    id: "location",
+    name: "Location",
+    options: ["British Columbia", "Alberta", "Ontario", "Newfoundland", "PEI", "Nova Scotia", "New Brunswick", "Quebec", "Manitoba", "Saskatchewan", "Northwest Territories", "Nunavut", "Yukon"],
+  },
+  {
+    id: "team",
+    name: "Team Size",
+    options: ["1-10", "11-50", "51-100", "101-500", ">500"],
+  },
+  {
+    id: "revenue",
+    name: "Revenue",
+    options: ["Pre-revenue", "<$100K", "$100K-$1M", "$1M-$10M", ">$10M"],
+  },
+];
+*/
 // Generate mock fundee data
 export const mockFundees: FundeeData[] = [
   {
