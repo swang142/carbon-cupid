@@ -47,7 +47,7 @@ export function FunderCard({ funder, priority = false }: FunderCardProps) {
       className={cn(
         'card-hover overflow-hidden border bg-card h-full',
         'transition-all duration-500 ease-out transform',
-        isLoaded ? 'opacity-100' : 'opacity-0',
+        isLoaded ? 'opacity-97' : 'opacity-0',
         isVisible ? 'translate-y-0' : 'translate-y-4'
       )}
     >

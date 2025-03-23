@@ -3,26 +3,27 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #FF2400;
-  --color-secondary: #FF6761;
-  --color-black: #000000;
-  --color-gray-dark: #505050;
-  --color-gray-light: #757575;
-  --color-outline: #D5D5D5;
-  --color-mute: #BFBFD3;
-  --color-active-shade: #CBD0FF;
-  --color-hover-shade: #ECEEFF;
-
+  --color-primary: rgb(32, 87, 129); /* Deep blue */
+  --color-secondary: #4F959D; /* Muted blue-green */
+  --color-black: #000000; /* Black */
+  --color-gray-dark: #505050; /* Dark gray */
+  --color-gray-light: #757575; /* Light gray */
+  --color-outline: #D5D5D5; /* Light gray */
+  --color-mute: #BFBFD3; /* Muted gray */
+  --color-active-shade: #98D2C0; /* Soft green-blue */
+  --color-hover-shade: #F6F8D5; /* Soft cream */
+  
   --font-inter: inter, sans-serif;
 }
 
 @layer base {
   html, body {
     @apply font-inter scroll-smooth;
+    /* background: linear-gradient(135deg, rgb(32, 87, 129), #4F959D, #98D2C0, #F6F8D5); Gradient background */
   }
 
   p {
-    @apply text-gray-light font-normal text-lg font-inter
+    @apply text-gray-light font-normal text-lg font-inter;
   }
 
   /* Card hover effect */
@@ -108,4 +109,12 @@
 
 [data-radix-scroll-area-viewport] > div {
   display: block !important;
+}
+
+.card {
+  @apply relative w-full bg-gray-200 rounded-[21px] transition-all; /* Tailwind utility classes */
+  background: linear-gradient(135deg, rgb(32, 87, 129), #4F959D, #98D2C0, #F6F8D5); /* Gradient background */
+  box-shadow: 35px 35px 70px var(--color-gray-dark), -35px -35px 70px var(--color-white); /* Custom box shadow */
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }

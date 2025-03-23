@@ -13,7 +13,7 @@ export const Progress: React.FC<ProgressProps> = ({ value, max = 100, className 
   return (
     <div className={`relative w-full h-2 bg-gray-200 rounded-full ${className}`}>
       <div
-        className="absolute top-0 left-0 h-full bg-orange-500 rounded-full"
+        className="absolute top-0 left-0 h-full bg-teal-300 rounded-full"
         style={{ width: `${(progress / max) * 100}%` }}
       />
     </div>

@@ -7,6 +7,7 @@ import fundeeRoutes from "./routes/fundeeRoutes.js";
 import funderRoutes from "./routes/funderRoutes.js";
 import mcdrRoutes from "./routes/mcdrRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+// import { Fundee } from "./models/models.js";
 import { Fundee, Funders } from "./models/models.js";
 
 import axios from "axios";
