@@ -97,7 +97,7 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
 					)}
 				>
 					<CardContent className="p-0">
-						<div className="relative h-40 bg-secondary/30 overflow-hidden">
+						<div className="relative h-44 bg-white overflow-hidden border-b border-border/50">
 							<div
 								className={cn(
 									"absolute inset-0 filter blur-xl opacity-20 transition-opacity duration-500",
