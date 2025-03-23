@@ -18,7 +18,7 @@
 
 @layer base {
   html, body {
-    @apply font-inter scroll-smooth
+    @apply font-inter scroll-smooth;
   }
 
   p {

@@ -22,12 +22,10 @@ export function FundeeList({ fundees, isLoading, searchQuery }: FundeeListProps)
     const renderFundees = async () => {
       setRenderedFundees([]);
       
-      // Progressive rendering
       const batchSize = 4;
       for (let i = 0; i < fundees.length; i += batchSize) {
         const batch = fundees.slice(0, i + batchSize);
         setRenderedFundees(batch);
-        // Small delay between batches for staggered effect
         if (i + batchSize < fundees.length) {
           await new Promise(resolve => setTimeout(resolve, 150));
         }

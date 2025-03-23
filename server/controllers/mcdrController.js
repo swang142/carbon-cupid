@@ -1,44 +1,53 @@
-import { MCDR } from '../models/models';
+import { mCDR_trials } from '../models/models.js';
 
-export const createMCDR = async (req, res) => {
+const getAllMCDR = async (req, res) => {
     try {
-        const mcdr = await MCDR.create(req.body);
-        res.status(201).json(mcdr);
+        const mcdr = await mCDR_trials.findAll();
+        res.status(200).json({success: true, data: mcdr, count: mcdr.length});
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to get MCDR' });
+    }
+};
+
+const createMCDR = async (req, res) => {
+    try {
+        const mcdr = await mCDR_trials.create(req.body);
+        res.status(201).json({success: true, data: mcdr});
     } catch (error) {
         res.status(500).json({ error: 'Failed to create MCDR' });
     }
 };
 
-export const getMCDRById = async (req, res) => {
+const getMCDRById = async (req, res) => {
     try {
-        const mcdr = await MCDR.findByPk(req.params.id);
-        res.status(200).json(mcdr);
+        const mcdr = await mCDR_trials.findByPk(req.params.id);
+        res.status(200).json({success: true, data: mcdr});
     } catch (error) {
         res.status(500).json({ error: 'Failed to get MCDR' });
     }
 };  
 
-export const updateMCDR = async (req, res) => {
+const updateMCDR = async (req, res) => {
     try {
-        const mcdr = await MCDR.findByPk(req.params.id);
+        const mcdr = await mCDR_trials.findByPk(req.params.id);
         if (!mcdr) {
             return res.status(404).json({ error: 'MCDR not found' });
         }
         await mcdr.update(req.body);
-        res.status(200).json(mcdr);
+        res.status(200).json({success: true, data: mcdr});
     } catch (error) {
         res.status(500).json({ error: 'Failed to update MCDR' });
     }
 };
 
-export const deleteMCDR = async (req, res) => {
+const deleteMCDR = async (req, res) => {
     try {   
-        const mcdr = await MCDR.findByPk(req.params.id);
+        const mcdr = await mCDR_trials.findByPk(req.params.id);
         if (!mcdr) {
             return res.status(404).json({ error: 'MCDR not found' });
         }   
         await mcdr.destroy();
-        res.status(204).json({ message: 'MCDR deleted successfully' });
+        res.status(204).json({success: true, message: 'MCDR deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete MCDR' });
     }
@@ -46,3 +55,4 @@ export const deleteMCDR = async (req, res) => {
 
 
 
+export default { getAllMCDR, getMCDRById, createMCDR, updateMCDR, deleteMCDR };

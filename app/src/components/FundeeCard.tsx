@@ -13,11 +13,11 @@ export interface FundeeData {
   logo: string
   stage: string
   industry: string[]
-  tagline: string
   fundingNeeded: string
   location: string
   teamSize: string
   revenue: string
+  projectedRevenue: string
   foundedYear: number
   match: number
   description: string
@@ -101,8 +101,6 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
                     {fundee.stage}
                   </Badge>
                 </div>
-
-                <p className="text-sm text-muted-foreground line-clamp-2">{fundee.tagline}</p>
               </div>
 
               <div className="flex flex-wrap gap-2">

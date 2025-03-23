@@ -21,33 +21,30 @@ import { CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const stages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C"];
-const revenueRanges = [
-  "0-100K", 
-  "100K-500K", 
-  "500K-1M", 
-  "1M-5M", 
-  "5M-10M", 
-  "10M+"
+const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C"];
+const averageInvestmentSizes = [
+  "< $50K", 
+  "$50K-$100K", 
+  "$100K-$500K", 
+  "$500K-$1M", 
+  "$1M-$5M", 
+  "$5M+"
 ];
 
 const RegisterFunderPage = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    organizationName: "",
-    email: "",
-    stage: "",
+    name: "",
+    contactEmail: "",
     website: "",
-    industry: "",
-    tagline: "",
-    description: "",
-    fundingNeeded: "",
+    about: "",
+    numberOfInvestments: "",
+    lastInvestmentDate: null as Date | null,
+    focusAreas: "",
+    fundingStage: "",
+    averageInvestmentSize: "",
     location: "",
-    teamSize: "",
-    foundingDate: null as Date | null,
-    revenue: "",
-    carbonCredits: "",
-    mcdr: ""
+    geographicFocus: ""
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,14 +57,14 @@ const RegisterFunderPage = () => {
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    setFormData(prev => ({ ...prev, foundingDate: date || null }));
+    setFormData(prev => ({ ...prev, lastInvestmentDate: date || null }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.organizationName || !formData.email) {
+    if (!formData.name || !formData.contactEmail) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -91,7 +88,7 @@ const RegisterFunderPage = () => {
           <div className="text-center mb-10 space-y-4 animate-fade-in">
             <h1 className="text-4xl font-bold tracking-tight text-primary">Register as a Funder</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join our platform to connect with innovative carbon removal projects
+              Join our platform to connect with innovative carbon removal projects seeking funding.
             </p>
           </div>
           
@@ -103,64 +100,34 @@ const RegisterFunderPage = () => {
                   <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Basic Information</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label htmlFor="organizationName" className="text-sm font-semibold text-foreground/80">
-                        Organization Name*
+                      <label htmlFor="name" className="text-sm font-semibold text-foreground/80">
+                        Name*
                       </label>
                       <Input
-                        id="organizationName"
-                        name="organizationName"
-                        value={formData.organizationName}
+                        id="name"
+                        name="name"
+                        value={formData.name}
                         onChange={handleInputChange}
-                        placeholder="Your organization name"
+                        placeholder="Your organization or fund name"
                         className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-semibold text-foreground/80">
-                        Email*
+                      <label htmlFor="contactEmail" className="text-sm font-semibold text-foreground/80">
+                        Contact Email*
                       </label>
                       <Input
-                        id="email"
-                        name="email"
+                        id="contactEmail"
+                        name="contactEmail"
                         type="email"
-                        value={formData.email}
+                        value={formData.contactEmail}
                         onChange={handleInputChange}
                         placeholder="contact@organization.com"
                         className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                       />
                     </div>
-                  </div>
-                </div>
 
-                {/* Organization Details Section */}
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Organization Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="stage" className="text-sm font-semibold text-foreground/80">
-                        Funding Stage*
-                      </label>
-                      <Select
-                        value={formData.stage}
-                        onValueChange={(value: string) => handleSelectChange("stage", value)}
-                      >
-                        <SelectTrigger
-                          id="stage"
-                          className="w-full bg-white border border-gray-300 focus:ring-2 focus:ring-primary/50"
-                        >
-                          <SelectValue placeholder="Select funding stage" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border rounded-md shadow-md">
-                          {stages.map((stage) => (
-                            <SelectItem key={stage} value={stage} className="cursor-pointer z-150 hover:bg-accent">
-                              {stage}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
                     <div className="space-y-2">
                       <label htmlFor="website" className="text-sm font-semibold text-foreground/80">
                         Website
@@ -171,105 +138,6 @@ const RegisterFunderPage = () => {
                         value={formData.website}
                         onChange={handleInputChange}
                         placeholder="https://example.com"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="industry" className="text-sm font-semibold text-foreground/80">
-                        Industry
-                      </label>
-                      <Input
-                        id="industry"
-                        name="industry"
-                        value={formData.industry}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Renewable Energy"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="tagline" className="text-sm font-semibold text-foreground/80">
-                        Tagline
-                      </label>
-                      <Input
-                        id="tagline"
-                        name="tagline"
-                        value={formData.tagline}
-                        onChange={handleInputChange}
-                        placeholder="A short tagline for your organization"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="description" className="text-sm font-semibold text-foreground/80">
-                      Organization Description
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Describe your organization and what you do"
-                      className="flex min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                {/* Financial & Team Information */}
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Financial & Team Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="fundingNeeded" className="text-sm font-semibold text-foreground/80">
-                        Funding Needed ($)
-                      </label>
-                      <Input
-                        id="fundingNeeded"
-                        name="fundingNeeded"
-                        type="number"
-                        value={formData.fundingNeeded}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 500000"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="revenue" className="text-sm font-semibold text-foreground/80">
-                        Revenue Range
-                      </label>
-                      <Select
-                        value={formData.revenue}
-                        onValueChange={(value: string) => handleSelectChange("revenue", value)}
-                      >
-                        <SelectTrigger id="revenue" className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50">
-                          <SelectValue placeholder="Select revenue range" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border rounded-md shadow-md">
-                          {revenueRanges.map((range) => (
-                            <SelectItem key={range} value={range} className="cursor-pointer hover:bg-accent">
-                              {range}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="teamSize" className="text-sm font-semibold text-foreground/80">
-                        Team Size
-                      </label>
-                      <Input
-                        id="teamSize"
-                        name="teamSize"
-                        type="number"
-                        value={formData.teamSize}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 10"
                         className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                       />
                     </div>
@@ -287,10 +155,45 @@ const RegisterFunderPage = () => {
                         className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="about" className="text-sm font-semibold text-foreground/80">
+                      About
+                    </label>
+                    <textarea
+                      id="about"
+                      name="about"
+                      value={formData.about}
+                      onChange={(e) => setFormData(prev => ({ ...prev, about: e.target.value }))}
+                      placeholder="Describe your organization, mission, and investment philosophy"
+                      className="flex min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Investment Details */}
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Investment Details</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="numberOfInvestments" className="text-sm font-semibold text-foreground/80">
+                        Number of Investments
+                      </label>
+                      <Input
+                        id="numberOfInvestments"
+                        name="numberOfInvestments"
+                        type="number"
+                        value={formData.numberOfInvestments}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 25"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="foundingDate" className="text-sm font-semibold text-foreground/80">
-                        Founding Date
+                      <label htmlFor="lastInvestmentDate" className="text-sm font-semibold text-foreground/80">
+                        Last Investment Date
                       </label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -298,12 +201,12 @@ const RegisterFunderPage = () => {
                             variant="outline"
                             className={cn(
                               "w-full justify-start text-left font-normal transition-all duration-200 focus:ring-2 focus:ring-primary/50",
-                              !formData.foundingDate && "text-muted-foreground"
+                              !formData.lastInvestmentDate && "text-muted-foreground"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.foundingDate ? (
-                              format(formData.foundingDate, "PPP")
+                            {formData.lastInvestmentDate ? (
+                              format(formData.lastInvestmentDate, "PPP")
                             ) : (
                               <span>Pick a date</span>
                             )}
@@ -312,7 +215,7 @@ const RegisterFunderPage = () => {
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={formData.foundingDate || undefined}
+                            selected={formData.lastInvestmentDate || undefined}
                             onSelect={handleDateChange}
                             initialFocus
                             className="rounded-md border shadow-md"
@@ -320,9 +223,86 @@ const RegisterFunderPage = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="fundingStage" className="text-sm font-semibold text-foreground/80">
+                        Funding Stage
+                      </label>
+                      <Select
+                        value={formData.fundingStage}
+                        onValueChange={(value: string) => handleSelectChange("fundingStage", value)}
+                      >
+                        <SelectTrigger id="fundingStage" className="w-full border border-black focus:ring-2 focus:ring-primary/50">
+                          <SelectValue placeholder="Select preferred funding stage" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border rounded-md shadow-md">
+                          {fundingStages.map((stage) => (
+                            <SelectItem key={stage} value={stage} className="cursor-pointer z-150 hover:bg-accent">
+                              {stage}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="averageInvestmentSize" className="text-sm font-semibold text-foreground/80">
+                        Average Investment Size
+                      </label>
+                      <Select
+                        value={formData.averageInvestmentSize}
+                        onValueChange={(value: string) => handleSelectChange("averageInvestmentSize", value)}
+                      >
+                        <SelectTrigger id="averageInvestmentSize" className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50">
+                          <SelectValue placeholder="Select average investment size" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border rounded-md shadow-md">
+                          {averageInvestmentSizes.map((size) => (
+                            <SelectItem key={size} value={size} className="cursor-pointer hover:bg-accent">
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
+                {/* Focus Areas */}
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Focus & Coverage</h2>
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="focusAreas" className="text-sm font-semibold text-foreground/80">
+                        Focus Areas
+                      </label>
+                      <Input
+                        id="focusAreas"
+                        name="focusAreas"
+                        value={formData.focusAreas}
+                        onChange={handleInputChange}
+                        placeholder="e.g. Clean Energy, Carbon Capture, Sustainable Agriculture"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                      />
+                      <p className="text-xs text-muted-foreground">Comma-separated list of your investment focus areas</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="geographicFocus" className="text-sm font-semibold text-foreground/80">
+                        Geographic Focus
+                      </label>
+                      <Input
+                        id="geographicFocus"
+                        name="geographicFocus"
+                        value={formData.geographicFocus}
+                        onChange={handleInputChange}
+                        placeholder="e.g. North America, Europe, Global"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                      />
+                      <p className="text-xs text-muted-foreground">Regions or countries where you prefer to invest</p>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="pt-6">
                   <Button 

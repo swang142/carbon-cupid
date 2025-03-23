@@ -16,33 +16,38 @@ const filterCategories = [
   {
     id: "stage",
     name: "Stage",
-    options: ["Seed", "Pre-Seed", "Growth"],
+    options: ["Seed", "Pre-Seed", "Growth", "Series A"],
   },
   {
-    id: "technology",
+    id: "mcdr_type",
     name: "Technology",
-    options: ["Electrochemical CDR", "Microalgae Cultivation", "Carbon Sequestration", "Macroalgae Cultivation", "Ocean Alkalinity Enhancement", "Blue Carbon Restoration"],
+    options: ["Direct ocean capture", "Ocean alkalinity enhancement (electrochemical)", "Biomass growing/harvesting/sinking", "Agriculture Forestry and Other Land Use", "Energy industries (renewable/non-renewable sources); Transport"],
   },
   {
-    id: "funding",
+    id: "funding_requested",
     name: "Funding Needed",
     options: ["<$500K", "$500K-$1M", "$1M-$5M", "$5M-$10M", ">$10M"],
   },
   {
     id: "location",
     name: "Location",
-    options: ["British Columbia", "Alberta", "Ontario", "Newfoundland", "PEI", "Nova Scotia", "New Brunswick", "Quebec", "Manitoba", "Saskatchewan", "Northwest Territories", "Nunavut", "Yukon"],
+    options: ["Canada", "Other"],
   },
   {
     id: "team",
     name: "Team Size",
-    options: ["1-10", "11-50", "51-100", "101-500", ">500"],
+    options: ["1-10", "11-50", "51-200", ">200"],
   },
   {
-    id: "revenue",
+    id: "total_credits_issued",
     name: "Revenue",
     options: ["Pre-revenue", "<$100K", "$100K-$1M", "$1M-$10M", ">$10M"],
   },
+  {
+    id: "expected_credits",
+    name: "Expected Revenue over Next 5 Years",
+    options: ["<$100K", "$100K-$1M", "$1M-$10M", ">$10M"],
+  }
 ];
 
 export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: Record<string, string[]>) => void }) {
@@ -145,7 +150,7 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                     size="sm"
                     className="w-full flex justify-between bg-background/50 p-3 h-auto"
                   >
-                    <span className="font-medium">{category.name}</span>
+                    <span className="font-medium break-words">{category.name}</span>
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform duration-200",
@@ -155,7 +160,7 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="bg-background/30 rounded-b-md p-2">
-                  <div className="grid grid-cols-1 gap-1">
+                  <div className="grid grid-cols-1 gap-1 flex-wrap">
                     {category.options.map((option) => {
                       const isSelected = activeFilters[category.id]?.includes(option);
                       return (
@@ -164,7 +169,7 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                           variant="ghost"
                           size="sm"
                           className={cn(
-                            "justify-start h-8 px-2 text-sm font-normal",
+                            "justify-start h-8 px-2 text-sm font-normal break-words",
                             isSelected && "bg-primary/10 text-primary"
                           )}
                           onClick={() => toggleFilter(category.id, option)}

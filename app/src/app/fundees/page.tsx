@@ -51,7 +51,7 @@ export default function FundeesPage() {
   }, []);
   
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="flex flex-col bg-background">
       <main className="flex-1">
         <div className="container px-4 py-">
           <div className="max-w-screen-2xl mx-auto">
@@ -61,7 +61,6 @@ export default function FundeesPage() {
                     <FundeeFilter onFiltersChange={handleFiltersChange} />
                   </div>
                 </div>
-
               <div className="col-span-10">
                 <div className="flex flex-col gap-8">
                   <div className="flex flex-col gap-4">

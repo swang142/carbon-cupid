@@ -43,7 +43,7 @@ const JoinPage = () => {
 									onClick={() => handleSelection("fundee")}
 									className="w-full mt-auto hover:cursor-pointer"
 								>
-									Coming Soon
+									Register as Fundee
 								</Button>
 							</CardContent>
 						</Card>

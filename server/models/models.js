@@ -1,102 +1,196 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
 
-const Fundee = sequelize.define('Fundee', {
+const Fundee = sequelize.define('fundeetable', {
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        allowNull: false,
-        primaryKey: true
-    },
-  organizationName: { //provide
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  logo: { //provide
-    type: DataTypes.STRING 
-  },
-  stage: { //provide
-    type: DataTypes.ENUM('Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C')
-  },
-  industry: { //provide
-    type: DataTypes.ARRAY(DataTypes.STRING) 
-  },
-  tagline: { //provide
-    type: DataTypes.TEXT
-  },
-  fundingNeeded: { //provide
-    type: DataTypes.INTEGER
-  },
-  longitude: { //provide
-    type: DataTypes.FLOAT
-  },
-  latitude: { //provide
-    type: DataTypes.FLOAT
-  },
-  teamSize: { //provide
-    type: DataTypes.RANGE(DataTypes.INTEGER)
-  },
-  revenue: { //provide
-    type: DataTypes.RANGE(DataTypes.INTEGER)
-  },
-  foundingDate: { //provide
-    type: DataTypes.DATE
-  },
-  carbon_credits_generated: { //provide
-    type: DataTypes.INTEGER
-  },
-  compatability_score: { //provide
-    type: DataTypes.INTEGER
-  },
-  impact_score: {
-    type: DataTypes.INTEGER
-  },
-  mcdr_approach: { //provide  
-    type: DataTypes.ARRAY(DataTypes.STRING)
-  },
-  description: {
-    type: DataTypes.TEXT
-  }
-});
-
-const mCDR_trials = sequelize.define('MCDR_trials', {
-    id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        allowNull: false,
-        primaryKey: true
-    },
-
-    organizationName: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    all_cdr_methods: { //provide
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: false
-    },
-    goal_description: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    mrv_strategy: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    monitoring_platforms: {
-        type: DataTypes.ENUM('self-monitoring', 'third-party-monitoring'),
-    },
-    latitude: {
-        type: DataTypes.FLOAT,
+        type: DataTypes.INTEGER,
+        defaultValue: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
         allowNull: false
     },
     longitude: {
         type: DataTypes.FLOAT,
         allowNull: false
+    },
+    latitude: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+    },
+    company_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    company_description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    website: {
+        type: DataTypes.STRING(255),
+        defaultValue: 'unknown'
+    },
+    contact: {
+        type: DataTypes.STRING(255),
+        defaultValue: 'unknown'
+    },
+    headcount: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    project_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    project_description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    project_status: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    method: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    certifier: {
+        type: DataTypes.STRING(255),
+        defaultValue: null
+    },
+    mcdr_type: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    founding_year: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    stage: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    current_funding: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    funding_requested: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    total_credits_issued: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    expected_credits: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    rawscore: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
+}, {
+    timestamps: false,
+    tableName: 'fundeetable'
 });
 
-Fundee.hasOne(mCDR_trials);
-mCDR_trials.belongsTo(Fundee);
+const Funders = sequelize.define('funderstable', {
+  id: {
+    type: DataTypes.INTEGER,
+    defaultValue: DataTypes.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true
+  },
+  organization_name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  contact: {
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  website: {
+    type: DataTypes.STRING
+  },
+  num_investments: {
+    type: DataTypes.INTEGER
+  },
+  last_investment_date: {
+    type: DataTypes.DATE
+  },
+  description: {
+    type: DataTypes.TEXT
+  },
+  focus_areas: {
+    type: DataTypes.ARRAY(DataTypes.STRING)
+  },
+  funding_stages: {
+    type: DataTypes.ARRAY(DataTypes.STRING)
+  },
+  avg_investment_size: {
+    type: DataTypes.INTEGER
+  },
+  longitude: {
+    type: DataTypes.FLOAT
+  },
+  latitude: {
+    type: DataTypes.FLOAT
+  },
+  geographic_focus: {
+    type: DataTypes.ARRAY(DataTypes.STRING)
+  }
+},
+{
+  timestamps: false,
+  tableName: 'funderstable'
+});
 
-export { Fundee, mCDR_trials };
+
+const mCDR_trials = sequelize.define('mcdr_trials', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        allowNull: false,
+        primaryKey: true
+    },
+    trial_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },  
+    leading_organization: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    other_leading_organizations: {
+      type: DataTypes.ARRAY(DataTypes.STRING)
+    },
+    organization_type: {
+      type: DataTypes.ARRAY(DataTypes.STRING)
+    },
+    all_cdr_methods: { //provide
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    collaborators: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    mrv_provider: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    mrv_strategy: {
+      type: DataTypes.STRING
+    },
+    monitoring_platforms: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    measurements: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+},
+{
+  timestamps: false,
+  tableName: 'mcdr_trials'
+});
+
+
+export { Fundee, Funders, mCDR_trials };
