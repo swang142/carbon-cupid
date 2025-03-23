@@ -1,5 +1,5 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js'; 
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/database.js";
 
 const Fundee = sequelize.define('Fundee', {
     id: {
@@ -27,8 +27,11 @@ const Fundee = sequelize.define('Fundee', {
   fundingNeeded: { //provide
     type: DataTypes.INTEGER
   },
-  location: {  //provide
-    type: DataTypes.STRING
+  longitude: { //provide
+    type: DataTypes.FLOAT
+  },
+  latitude: { //provide
+    type: DataTypes.FLOAT
   },
   teamSize: { //provide
     type: DataTypes.RANGE(DataTypes.INTEGER)
@@ -63,13 +66,7 @@ const mCDR_trials = sequelize.define('MCDR_trials', {
         allowNull: false,
         primaryKey: true
     },
-    FundeesId: {
-        type: DataTypes.UUID,
-        references: {
-            model: 'Fundees',
-            key: 'id'
-        }
-    },
+
     organizationName: {
         type: DataTypes.STRING,
         allowNull: false
