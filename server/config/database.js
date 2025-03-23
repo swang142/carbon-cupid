@@ -1,7 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from 'jsr:@supabase/supabase-js@2'
 
-const supabaseUrl = process.env.DB_URL;
-const supabaseKey = process.env.DB_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.DB_URL
+const supabaseKey = process.env.DB_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-export default supabase;
+export default supabase
+
+
