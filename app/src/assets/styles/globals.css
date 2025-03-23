@@ -14,7 +14,6 @@
   --color-hover-shade: #ECEEFF;
 
   --font-inter: inter, sans-serif;
-
 }
 
 @layer base {
@@ -26,59 +25,83 @@
     @apply text-gray-light font-normal text-lg font-inter
   }
 
-    /* Card hover effect */
-    .card-hover {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: transform;
-    }
-    
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: hsl(var(--muted-foreground) / 0.3);
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: hsl(var(--muted-foreground) / 0.5);
-    }
-    
-    /* Page transitions */
-    .page-transition-enter {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    
-    .page-transition-enter-active {
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 400ms, transform 400ms;
-    }
-    
-    .page-transition-exit {
-      opacity: 1;
-    }
-    
-    .page-transition-exit-active {
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 300ms, transform 300ms;
-    }
-    
-    /* Focus styles */
-
+  /* Card hover effect */
+  .card-hover {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
   }
   
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  
+  /* Page transitions */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 400ms, transform 400ms;
+  }
+  
+  .page-transition-exit {
+    opacity: 1;
+  }
+  
+  .page-transition-exit-active {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  /* Dropdown fixes - solid backgrounds */
+  [data-radix-popper-content-wrapper] > div {
+    background-color: white !important;
+    opacity: 1 !important;
+  }
+
+  .dark [data-radix-popper-content-wrapper] > div {
+    background-color: #1c1c1c !important;
+    opacity: 1 !important;
+  }
+  
+  /* Alternative selectors for dropdown menus */
+  .select-content,
+  [role="listbox"],
+  [data-state="open"] > [role="dialog"],
+  [cmdk-overlay] {
+    background-color: white !important;
+    opacity: 1 !important;
+  }
+
+  .dark .select-content,
+  .dark [role="listbox"],
+  .dark [data-state="open"] > [role="dialog"],
+  .dark [cmdk-overlay] {
+    background-color: #1c1c1c !important;
+    opacity: 1 !important;
+  }
+}

@@ -56,12 +56,19 @@ const Fundee = sequelize.define('Fundee', {
   }
 });
 
-const MCDR = sequelize.define('MCDR', {
+const mCDR_trials = sequelize.define('MCDR_trials', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
         primaryKey: true
+    },
+    FundeesId: {
+        type: DataTypes.UUID,
+        references: {
+            model: 'Fundees',
+            key: 'id'
+        }
     },
     organizationName: {
         type: DataTypes.STRING,
@@ -92,7 +99,7 @@ const MCDR = sequelize.define('MCDR', {
     }
 });
 
-Fundee.hasOne(MCDR);
-MCDR.belongsTo(Fundee);
+Fundee.hasOne(mCDR_trials);
+mCDR_trials.belongsTo(Fundee);
 
 export { Fundee, MCDR };

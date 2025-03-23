@@ -145,7 +145,10 @@ const RegisterFunderPage = () => {
                         value={formData.stage}
                         onValueChange={(value: string) => handleSelectChange("stage", value)}
                       >
-                        <SelectTrigger id="stage" className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50">
+                        <SelectTrigger
+                          id="stage"
+                          className="w-full bg-white border border-gray-300 focus:ring-2 focus:ring-primary/50"
+                        >
                           <SelectValue placeholder="Select funding stage" />
                         </SelectTrigger>
                         <SelectContent className="bg-popover border rounded-md shadow-md">

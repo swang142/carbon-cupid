@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import supabase from "./config/database.js";
+import sequelize from "./config/database.js";
 import fundeeRoutes from "./routes/fundeeRoutes.js";
 
 const app = express();
@@ -66,5 +66,18 @@ app.get("/api/:tableName", async (req, res) => {
 		});
 	}
 });
+
+sequelize.authenticate()
+    .then(() => {
+        console.log("Connection established successfully");
+        return sequelize.sync({ alter: true }); // This will create/update tables
+    })
+    .then(() => {
+        console.log("Database synchronized successfully");
+    })
+    .catch((err) => {
+        console.error("Database connection/sync error:", err);
+    });
+
 
 export default app;
