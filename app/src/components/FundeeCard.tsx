@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { FundingProgressBar } from "@/components/ui/progress-bar"
 import {
   Drawer,
   DrawerClose,
@@ -18,7 +19,7 @@ import {
 import { ArrowUpRight, BarChart3, Calendar, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-//const googleMapsApiKey = process.env.NEXT_PUBLIC_MAP_API;
+const googleMapsApiKey = process.env.NEXT_PUBLIC_MAP_API;
 
 export interface FundeeData {
   id: number
@@ -179,49 +180,112 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
         <DrawerHeader>
           <DrawerTitle>{fundee.company_name}</DrawerTitle>
           <DrawerDescription>{fundee.mcdr_type}</DrawerDescription>
+          <FundingProgressBar
+            current={fundee.current_funding}
+            requested={fundee.funding_requested}
+          />
         </DrawerHeader>
 
-        <div className="px-4 pb-4 space-y-4 text-sm">
+        <div className="px-4 pb-4 space-y-6 text-sm">
           <p className="text-muted-foreground">{fundee.company_description}</p>
-
-          <div className="flex flex-col gap-2 text-xs">
-            <div><strong>Stage:</strong> {fundee.stage}</div>
-            <div><strong>Team Size:</strong> {fundee.headcount}</div>
-            <div><strong>Founded:</strong> {fundee.founding_year}</div>
-            <div><strong>Current Funding:</strong> ${fundee.current_funding.toLocaleString()}</div>
-            <div><strong>Funding Requested:</strong> ${fundee.funding_requested.toLocaleString()}</div>
-            <div><strong>Credits Issued:</strong> {fundee.total_credits_issued.toLocaleString()}</div>
-            <div><strong>Expected Credits (5 Years):</strong> {fundee.expected_credits.toLocaleString()}</div>
-            <div><strong>Certifier:</strong> {fundee.certifier || "N/A"}</div>
-            <div><strong>Project Status:</strong> {fundee.project_status}</div>
-            <div><strong>Method Type:</strong> {fundee.method ? "Permanence-based" : "Non-permanence-based"}</div>
-            <div><strong>Project Name:</strong> {fundee.project_name}</div>
-            <div><strong>Project Description:</strong> {fundee.project_description}</div>
-            <div><strong>Location:</strong> Longitude: {fundee.longitude}, Latitude: {fundee.latitude}</div>
-            
-            {fundee.longitude && fundee.latitude && (
-              <div className="mt-4">
-                <strong>Project Location Map:</strong>
-                {/* <img
-                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${fundee.longitude},${fundee.latitude}&zoom=12&size=500x300&maptype=roadmap&markers=color:red%7C${fundee.longitude},${fundee.latitude}&key=${googleMapsApiKey}`}
-                  alt="Project Location"
-                  className="mt-2 rounded-lg shadow"
-                  key={`${fundee.latitude}-${fundee.longitude}`}
-                /> */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <div className="flex flex-col gap-2 text-sm text-foreground">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Stage:</span>
+                <span>{fundee.stage}</span>
               </div>
-            )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Team Size:</span>
+                <span>{fundee.headcount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Founded:</span>
+                <span>{fundee.founding_year}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Current Funding:</span>
+                <span>${fundee.current_funding.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Funding Requested:</span>
+                <span>${fundee.funding_requested.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Credits Issued:</span>
+                <span>{fundee.total_credits_issued.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Expected Credits (5 Years):</span>
+                <span>{fundee.expected_credits.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Certifier:</span>
+                <span>{fundee.certifier || "N/A"}</span>
+              </div>
+            </div>
 
+            <div className="flex justify-center items-start">
+              <img
+                src={fundee.logo || "/placeholder.svg"}
+                alt={`${fundee.company_name} Logo`}
+                className="max-h-24 object-contain"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-2">
+            <div className="flex flex-col text-xs">
+              <strong>Project Location Map:</strong>
+              <img
+                src={`https://maps.googleapis.com/maps/api/staticmap?center=${fundee.latitude},${fundee.longitude}&zoom=12&size=500x300&maptype=roadmap&markers=color:red%7C${fundee.latitude},${fundee.longitude}&key=${googleMapsApiKey}`}
+                alt="Project Location"
+                className="mt-2 rounded-lg shadow"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2 text-sm text-foreground">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Project Status:</span>
+                <span>{fundee.project_status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Method Type:</span>
+                <span>{fundee.method ? "Permanence-based" : "Non-permanence-based"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-muted-foreground font-medium">Project Name:</span>
+                <span>{fundee.project_name}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-muted-foreground font-medium">Project Description:</span>
+                <span>{fundee.project_description}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-muted-foreground font-medium">Location:</span>
+                <span>Longitude: {fundee.longitude}, Latitude: {fundee.latitude}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 text-xs mt-4">
+            <div><strong>Location:</strong> Longitude: {fundee.longitude}, Latitude: {fundee.latitude}</div>
             <div><strong>Contact:</strong> {fundee.contact}</div>
-            <div><strong>Website:</strong> 
+            <div>
+              <strong>Website:</strong>
               {fundee.website && fundee.website !== "unknown" ? (
-                <a href={fundee.website} target="_blank" rel="noopener noreferrer" className="text-primary underline ml-1">
+                <a
+                  href={fundee.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline ml-1"
+                >
                   {fundee.website}
                 </a>
               ) : " Unknown"}
             </div>
           </div>
 
-          <DrawerClose className="mt-4 w-full inline-flex justify-center">
+          <DrawerClose className="mt-6 w-full inline-flex justify-center">
             <Button variant="link" className="w-full justify-center text-sm">Close</Button>
           </DrawerClose>
         </div>
