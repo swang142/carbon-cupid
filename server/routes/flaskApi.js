@@ -1,18 +1,14 @@
+// server/routes/flaskApi.js
 import express from "express";
 import axios from "axios";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
 
 const router = express.Router();
 
-// Configuration for the Flask API
+// Flask API URL - change to your Flask server URL
 const FLASK_API_URL = process.env.FLASK_API_URL || "http://localhost:5000/api";
 
 /**
  * Calculate match score between a funder and fundee
- * This endpoint forwards the request to the Flask API
  */
 router.post("/calculate-match", async (req, res) => {
   try {
@@ -72,85 +68,21 @@ router.post("/impact-score", async (req, res) => {
 });
 
 /**
- * Calculate goal alignment score
- */
-router.post("/goal-alignment", async (req, res) => {
-  try {
-    const response = await axios.post(`${FLASK_API_URL}/goal-alignment`, req.body);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error calculating goal alignment:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.response?.data?.error || "Failed to calculate goal alignment score" 
-    });
-  }
-});
-
-/**
- * Calculate location match score
- */
-router.post("/location-match", async (req, res) => {
-  try {
-    const response = await axios.post(`${FLASK_API_URL}/location-match`, req.body);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error calculating location match:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.response?.data?.error || "Failed to calculate location match score" 
-    });
-  }
-});
-
-/**
- * Calculate funding capability match score
- */
-router.post("/funding-capability-match", async (req, res) => {
-  try {
-    const response = await axios.post(`${FLASK_API_URL}/funding-capability-match`, req.body);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error calculating funding capability match:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.response?.data?.error || "Failed to calculate funding capability match score" 
-    });
-  }
-});
-
-/**
- * Check if the Flask API is running
+ * Health check endpoint
  */
 router.get("/health", async (req, res) => {
   try {
-    const response = await axios.get(`${FLASK_API_URL.replace("/api", "")}/`);
-    return res.status(200).json({
+    const response = await axios.get(FLASK_API_URL.replace('/api', '/'));
+    return res.json({
       success: true,
       message: "Flask API is running",
-      flask_status: response.data
+      status: response.data
     });
   } catch (error) {
     console.error("Error connecting to Flask API:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: "Failed to connect to Flask API" 
-    });
-  }
-});
-
-/**
- * Test Gemini API connection
- */
-router.get("/test-gemini", async (req, res) => {
-  try {
-    const response = await axios.get(`${FLASK_API_URL}/test-gemini`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error testing Gemini API:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.response?.data?.error || "Failed to test Gemini API connection" 
+    return res.status(500).json({
+      success: false,
+      error: "Failed to connect to Flask API"
     });
   }
 });

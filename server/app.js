@@ -1,3 +1,4 @@
+// server/app.js
 import express from "express";
 import cors from "cors";
 import { sequelize } from "./config/database.js";
@@ -5,18 +6,21 @@ import { supabase } from "./config/database.js";
 import fundeeRoutes from "./routes/fundeeRoutes.js";
 import funderRoutes from "./routes/funderRoutes.js";
 import mcdrRoutes from "./routes/mcdrRoutes.js";
-import { Fundee } from "./models/models.js";
-import axios from "axios";
+import flaskApiRoutes from "./routes/flaskApi.js"; // Import Flask API routes
 
 const app = express();
 
 app.use(cors());
-app.use(cors());
 app.use(express.json());
 
+<<<<<<< HEAD
+=======
+// API routes
+>>>>>>> 2f0340f (update to merge conflict)
 app.use("/api/fundees", fundeeRoutes);
 app.use("/api/funders", funderRoutes);
 app.use("/api/mcdrs", mcdrRoutes);
+app.use("/api/flask", flaskApiRoutes); // Add Flask API routes
 
 // Basic connection test
 app.get("/api/health", async (req, res) => {
@@ -32,6 +36,20 @@ app.get("/api/health", async (req, res) => {
 		res.status(500).json({ error: "Failed to connect to database" });
 	}
 });
+
+sequelize
+	.authenticate()
+	.then(() => {
+		console.log("Connection established successfully");
+		return sequelize.sync({ alter: true }); // This will create/update tables
+	})
+	.then(() => {
+		console.log("Database synchronized successfully");
+	})
+	.catch((err) => {
+		console.error("Database connection/sync error:", err);
+	});
+
 
 // call kenny apis
 // called whem fundee signs up
