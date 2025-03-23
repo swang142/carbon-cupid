@@ -39,37 +39,53 @@ def initialize_gemini():
         print(f"Error initializing Gemini API: {str(e)}")
         return False
 
-
-def calculate_risk_score_efficiency(efficiency_score):
-    print("\n===== RISK SCORE BASED ON EFFICIENCY =====")
-    # Start with baseline risk score
+def calculate_risk_score(data):
+    """
+    Calculate a simple risk score based on the provided data attributes.
+    
+    Parameters:
+    data (dict): Dictionary containing:
+        - total_credits: Actual carbon credits generated
+        - expected_credits: Expected carbon credits
+        - amount_invested: Investment amount
+    
+    Returns:
+    float: Risk score from 0-100 (lower is better)
+    """
+    # Extract the data
+    total_credits = data.get('total_credits', 0)
+    expected_credits = data.get('expected_credits', 0)
+    amount_invested = data.get('amount_invested', 0)
+    
+    # Start with a baseline risk score
     risk_score = 50
-    print(f"Starting with baseline risk score: {risk_score}")
-
-    total_credits = efficiency_score.get("total_credits", 0)
-    expected_credits = efficiency_score.get("expected_credits", 0)
-    amount_invested = efficiency_score.get("amount_invested", 0)
-
+    
+    # Adjust risk based on credit delivery ratio
     if expected_credits > 0:
-        efficiency_ratio = total_credits / expected_credits
-        efficiency_risk_adjustment = -min(
-            20, efficiency_ratio * 20
-        )  # Scale the efficiency adjustment
-    else:
-        efficiency_risk_adjustment = 0
-
-    print(
-        f"Efficiency ratio: {efficiency_ratio} → Adjustment: {efficiency_risk_adjustment}"
-    )
-    risk_score += efficiency_risk_adjustment
-
-    # Normalize to 0-100 range
+        delivery_ratio = total_credits / expected_credits
+        # Better than expected = lower risk, worse than expected = higher risk
+        risk_adjustment = (delivery_ratio - 1) * -25
+        risk_score += risk_adjustment
+    
+    # Adjust risk based on cost-effectiveness
+    if total_credits > 0 and amount_invested > 0:
+        cost_per_ton = amount_invested / total_credits
+        # Lower cost per ton = lower risk
+        if cost_per_ton < 50:
+            risk_score -= 15
+        elif cost_per_ton < 100:
+            risk_score -= 10
+        elif cost_per_ton < 150:
+            risk_score -= 5
+        elif cost_per_ton > 250:
+            risk_score += 15
+    
+    # Ensure risk score is between 0 and 100
     risk_score = max(0, min(100, risk_score))
+    
+    # Round to nearest whole number
+    return round(risk_score)
 
-    print(f"FINAL RISK SCORE BASED ON EFFICIENCY: {risk_score}")
-    print("===================================\n")
-
-    return risk_score
 
 
 # 2) Efficiency Score Calculation
@@ -328,34 +344,27 @@ def calculate_funding_capability_match(funder_capability, fundee_needs):
     print("==============================================\n")
 
     return match_score
-
-
-# API Endpoints
-@app.route("/api/risk-score", methods=["POST"])
+@app.route('/api/risk-score', methods=['POST'])
 def risk_score_endpoint():
     try:
-        print("\n[ENDPOINT] Processing /api/risk-score request")
         data = request.json
-        if not data:
-            print("Error: Missing data")
-            return jsonify({"error": "Missing data"}), 400
-
-        # Extract necessary fields from data
-        efficiency_data = {
-            "total_credits": data.get("total_credits", 0),
-            "expected_credits": data.get("expected_credits", 0),
-            "amount_invested": data.get("amount_invested", 0),
+        
+        # Create data dictionary with only the necessary fields
+        risk_data = {
+            'total_credits': data.get('total_credits'),
+            'expected_credits': data.get('expected_credits'),
+            'amount_invested': data.get('amount_invested')
         }
-
-        # Call the existing function with the extracted data
-        risk_score = calculate_risk_score_efficiency(efficiency_data)
-
-        print(f"[ENDPOINT] Returning risk score: {risk_score}")
-        return jsonify({"success": True, "risk_score": risk_score})
+        
+        # Calculate the risk score
+        risk_score = calculate_risk_score(risk_data)
+        
+        return jsonify({
+            'success': True,
+            'risk_score': risk_score
+        })
     except Exception as e:
-        print(f"[ERROR] Risk score calculation failed: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
+        return jsonify({'error': str(e)}), 500
 
 @app.route("/api/efficiency-score", methods=["POST"])
 def efficiency_score_endpoint():
