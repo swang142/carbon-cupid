@@ -1,344 +1,936 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Button, 
-  Card, 
-  CardContent,  
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Input
+import {
+	Button,
+	Card,
+	CardContent,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Input,
 } from "@/components/ui";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { geocodeLocation } from "@/lib/geocode";
 
 const stages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"];
 const revenueRanges = [
-  "0-100K", 
-  "100K-500K", 
-  "500K-1M", 
-  "1M-5M", 
-  "5M-10M", 
-  "10M+"
+	"0-100K",
+	"100K-500K",
+	"500K-1M",
+	"1M-5M",
+	"5M-10M",
+	"10M+",
 ];
+const fundingRanges = [
+	"0",
+	"<$100K",
+	"$100K-$500K",
+	"$500K-$1M",
+	"$1M-$5M",
+	"$5M-$10M",
+	">$10M",
+];
+const mcdrTypes = [
+	"Direct Air Capture",
+	"Enhanced Weathering",
+	"Ocean Alkalinity Enhancement",
+	"Biomass Carbon Removal",
+	"Biochar",
+	"Other",
+];
+const projectStatuses = [
+	"Planning",
+	"Unregistered",
+	"In Validation",
+	"In Development",
+	"Registration Requested",
+	"Operational",
+];
+const teamSizes = ["1-10", "11-50", "51-200", "200-500", ">500"];
 
-const RegisterFunderPage = () => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    organizationName: "",
-    email: "",
-    stage: "",
-    website: "",
-    industry: "",
-    tagline: "",
-    description: "",
-    fundingNeeded: "",
-    location: "",
-    teamSize: "",
-    foundingDate: null as Date | null,
-    revenue: "",
-    carbonCredits: "",
-    mcdr: ""
-  });
+const RegisterFundeePage = () => {
+	const { toast } = useToast();
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+	const initialFormState = {
+		organizationName: "",
+		email: "",
+		stage: "",
+		website: "",
+		industry: "",
+		tagline: "",
+		description: "",
+		fundingNeeded: "",
+		currentFunding: "",
+		location: "",
+		teamSize: "",
+		foundingDate: null as Date | null,
+		revenue: "",
+		carbonCredits: "",
+		expectedCredits: "",
+		mcdrType: "",
+		projectName: "",
+		projectDescription: "",
+		projectStatus: "Planning",
+		certifier: "",
+	};
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+	const [formData, setFormData] = useState(initialFormState);
 
-  const handleDateChange = (date: Date | undefined) => {
-    setFormData(prev => ({ ...prev, foundingDate: date || null }));
-  };
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.organizationName || !formData.email) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // This would be replaced with actual registration logic
-    console.log("Registration data:", formData);
-    toast({
-      title: "Success!",
-      description: "Your funder profile has been created successfully!",
-    });
-  };
+	const handleSelectChange = (name: string, value: string) => {
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
 
-  return (
-    <div className="pt-10 min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <main className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10 space-y-4 animate-fade-in">
-            <h1 className="text-4xl font-bold tracking-tight text-primary">Register as a Fundee</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join our platform to connect with innovative firms to invest in your project.
-            </p>
-          </div>
-          
-          <Card className="animate-scale-in shadow-xl border-2 border-primary/10">
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Information Section */}
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Basic Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="organizationName" className="text-sm font-semibold text-foreground/80">
-                        Organization Name*
-                      </label>
-                      <Input
-                        id="organizationName"
-                        name="organizationName"
-                        value={formData.organizationName}
-                        onChange={handleInputChange}
-                        placeholder="Your organization name"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-semibold text-foreground/80">
-                        Email*
-                      </label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="contact@organization.com"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-                  </div>
-                </div>
+	const handleDateChange = (date: Date | undefined) => {
+		setFormData((prev) => ({ ...prev, foundingDate: date || null }));
+	};
 
-                {/* Organization Details Section */}
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Organization Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="stage" className="text-sm font-semibold text-foreground/80">
-                        Funding Stage*
-                      </label>
-                      <Select
-                        value={formData.stage}
-                        onValueChange={(value: string) => handleSelectChange("stage", value)}
-                      >
-                        <SelectTrigger
-                          id="stage"
-                          className="w-full border border-black focus:ring-2 focus:ring-primary/50"
-                        >
-                          <SelectValue placeholder="Select funding stage" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border rounded-md shadow-md">
-                          {stages.map((stage) => (
-                            <SelectItem key={stage} value={stage} className="cursor-pointer z-150 hover:bg-accent">
-                              {stage}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="website" className="text-sm font-semibold text-foreground/80">
-                        Website
-                      </label>
-                      <Input
-                        id="website"
-                        name="website"
-                        value={formData.website}
-                        onChange={handleInputChange}
-                        placeholder="https://example.com"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
 
-                    <div className="space-y-2">
-                      <label htmlFor="industry" className="text-sm font-semibold text-foreground/80">
-                        Industry
-                      </label>
-                      <Input
-                        id="industry"
-                        name="industry"
-                        value={formData.industry}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Renewable Energy"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
+		// Basic validation
+		const missingFields = [];
+		if (!formData.organizationName) missingFields.push("Organization Name");
+		if (!formData.email) missingFields.push("Email");
+		if (!formData.stage) missingFields.push("Funding Stage");
+		if (!formData.fundingNeeded) missingFields.push("Funding Needed");
+		if (!formData.currentFunding) missingFields.push("Current Funding");
+		if (!formData.location) missingFields.push("Location");
+		if (!formData.mcdrType) missingFields.push("mCDR Type");
+		if (!formData.teamSize) missingFields.push("Team Size");
+		if (!formData.projectName) missingFields.push("Project Name");
+		if (!formData.projectStatus) missingFields.push("Project Status");
+		if (!formData.projectDescription)
+			missingFields.push("Project Description");
+		if (!formData.expectedCredits)
+			missingFields.push("Expected Credits (Next 5 Years)");
 
-                    <div className="space-y-2">
-                      <label htmlFor="tagline" className="text-sm font-semibold text-foreground/80">
-                        Tagline
-                      </label>
-                      <Input
-                        id="tagline"
-                        name="tagline"
-                        value={formData.tagline}
-                        onChange={handleInputChange}
-                        placeholder="A short tagline for your organization"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
-                  </div>
+		if (missingFields.length > 0) {
+			console.log(
+				`Validation failed: Missing fields: ${missingFields.join(", ")}`
+			);
 
-                  <div className="space-y-2">
-                    <label htmlFor="description" className="text-sm font-semibold text-foreground/80">
-                      Organization Description
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Describe your organization and what you do"
-                      className="flex min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
-                    />
-                  </div>
-                </div>
+			toast({
+				title: "Required Fields Missing",
+				description: `Please fill in all required fields: ${missingFields.join(
+					", "
+				)}`,
+				variant: "destructive",
+				duration: 5000,
+				className:
+					"border-red-500 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-50",
+			});
+			return;
+		}
 
-                {/* Financial & Team Information */}
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">Financial & Team Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="fundingNeeded" className="text-sm font-semibold text-foreground/80">
-                        Funding Needed ($)
-                      </label>
-                      <Input
-                        id="fundingNeeded"
-                        name="fundingNeeded"
-                        type="number"
-                        value={formData.fundingNeeded}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 500000"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
+		setIsSubmitting(true);
 
-                    <div className="space-y-2">
-                      <label htmlFor="revenue" className="text-sm font-semibold text-foreground/80">
-                        Revenue Range
-                      </label>
-                      <Select
-                        value={formData.revenue}
-                        onValueChange={(value: string) => handleSelectChange("revenue", value)}
-                      >
-                        <SelectTrigger id="revenue" className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50">
-                          <SelectValue placeholder="Select revenue range" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border rounded-md shadow-md">
-                          {revenueRanges.map((range) => (
-                            <SelectItem key={range} value={range} className="cursor-pointer hover:bg-accent">
-                              {range}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+		try {
+			// Format data for API
+			const fundeeData: any = {
+				company_name: formData.organizationName,
+				contact: formData.email,
+				website: formData.website || "unknown",
+				company_description:
+					formData.description ||
+					formData.tagline ||
+					"No description provided",
+				headcount: formData.teamSize || "1",
+				project_name: formData.projectName || formData.organizationName,
+				project_description:
+					formData.projectDescription ||
+					"No project description provided",
+				project_status: formData.projectStatus || "Planning",
+				mcdr_type: formData.mcdrType || "Other",
+				founding_year: formData.foundingDate
+					? formData.foundingDate.getFullYear()
+					: new Date().getFullYear(),
+				stage: formData.stage,
+				funding_requested: parseInt(formData.fundingNeeded) || 0,
+				certifier: formData.certifier || null,
+				method: true, // Default value
+				current_funding: formData.currentFunding || "0", // Use the selected value
+				total_credits_issued: parseInt(formData.carbonCredits) || 0,
+				expected_credits: parseInt(formData.expectedCredits) || 0,
+				rawscore: 0, // This will be calculated by the backend
+			};
 
-                    <div className="space-y-2">
-                      <label htmlFor="teamSize" className="text-sm font-semibold text-foreground/80">
-                        Team Size
-                      </label>
-                      <Input
-                        id="teamSize"
-                        name="teamSize"
-                        type="number"
-                        value={formData.teamSize}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 10"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
+			// Get coordinates from location
+			if (formData.location) {
+				const coordinates = await geocodeLocation(formData.location);
+				if (coordinates) {
+					fundeeData.latitude = coordinates.latitude;
+					fundeeData.longitude = coordinates.longitude;
+				} else {
+					throw new Error(
+						"Could not geocode location. Please provide a valid location."
+					);
+				}
+			} else {
+				throw new Error("Location is required for registration.");
+			}
 
-                    <div className="space-y-2">
-                      <label htmlFor="location" className="text-sm font-semibold text-foreground/80">
-                        Location
-                      </label>
-                      <Input
-                        id="location"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        placeholder="City, Country"
-                        className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-                      />
-                    </div>
+			// Send data to API using the new method
+			const result = await api.fundees.create(fundeeData);
 
-                    <div className="space-y-2">
-                      <label htmlFor="foundingDate" className="text-sm font-semibold text-foreground/80">
-                        Founding Date
-                      </label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal transition-all duration-200 focus:ring-2 focus:ring-primary/50",
-                              !formData.foundingDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.foundingDate ? (
-                              format(formData.foundingDate, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={formData.foundingDate || undefined}
-                            onSelect={handleDateChange}
-                            initialFocus
-                            className="rounded-md border shadow-md"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                </div>
+			console.log(
+				"Created fundee with ID:",
+				result.data?.id || "ID not returned"
+			);
 
+			setIsSuccess(true);
 
-                <div className="pt-6">
-                  <Button 
-                    type="submit" 
-                    className="w-full py-6 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    Create Funder Profile
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
-  );
+			toast({
+				title: "Success!",
+				description: `Your fundee profile has been created successfully with ID: ${
+					result.data?.id || "N/A"
+				}`,
+				variant: "success",
+				duration: 5000,
+				className:
+					"border-2 border-green-500 bg-green-50 text-green-900 dark:bg-green-950 dark:text-green-50 shadow-lg",
+			});
+
+			// Reset form
+			setFormData(initialFormState);
+
+			// After 3 seconds, reset success state
+			setTimeout(() => {
+				setIsSuccess(false);
+			}, 3000);
+		} catch (error) {
+			console.error("Registration error:", error);
+			toast({
+				title: "Error",
+				description:
+					error instanceof Error
+						? error.message
+						: "Failed to create fundee profile. Please try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	return (
+		<div className="pt-10 min-h-screen bg-gradient-to-b from-background to-secondary/10">
+			<main className="container mx-auto px-4 py-16">
+				<div className="max-w-4xl mx-auto">
+					<div className="text-center mb-10 space-y-4 animate-fade-in">
+						<h1 className="text-4xl font-bold tracking-tight text-primary">
+							Register as a Fundee
+						</h1>
+						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							Join our platform to connect with innovative firms
+							to invest in your project.
+						</p>
+					</div>
+
+					<Card
+						className={cn(
+							"animate-scale-in shadow-xl border-2",
+							isSuccess
+								? "border-green-500/50 bg-green-50/10"
+								: "border-primary/10"
+						)}
+					>
+						<CardContent className="p-8">
+							{isSuccess ? (
+								<div className="py-16 text-center space-y-4">
+									<div className="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											className="h-8 w-8"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M5 13l4 4L19 7"
+											/>
+										</svg>
+									</div>
+									<h2 className="text-2xl font-semibold text-foreground">
+										Profile Created Successfully!
+									</h2>
+									<p className="text-muted-foreground">
+										Thank you for joining our platform.
+									</p>
+								</div>
+							) : (
+								<form
+									onSubmit={handleSubmit}
+									className="space-y-8"
+								>
+									{/* Basic Information Section */}
+									<div className="space-y-6">
+										<h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">
+											Basic Information
+										</h2>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div className="space-y-2">
+												<label
+													htmlFor="organizationName"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Organization Name*
+												</label>
+												<Input
+													id="organizationName"
+													name="organizationName"
+													value={
+														formData.organizationName
+													}
+													onChange={handleInputChange}
+													placeholder="Your organization name"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="email"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Email*
+												</label>
+												<Input
+													id="email"
+													name="email"
+													type="email"
+													value={formData.email}
+													onChange={handleInputChange}
+													placeholder="contact@organization.com"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+										</div>
+									</div>
+
+									{/* Organization Details Section */}
+									<div className="space-y-6">
+										<h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">
+											Organization Details
+										</h2>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div className="space-y-2">
+												<label
+													htmlFor="stage"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Funding Stage*
+												</label>
+												<Select
+													value={formData.stage}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"stage",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="stage"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select funding stage" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{stages.map((stage) => (
+															<SelectItem
+																key={stage}
+																value={stage}
+																className="cursor-pointer z-150 hover:bg-accent"
+															>
+																{stage}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="website"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Website
+												</label>
+												<Input
+													id="website"
+													name="website"
+													value={formData.website}
+													onChange={handleInputChange}
+													placeholder="https://example.com"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="industry"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Industry
+												</label>
+												<Input
+													id="industry"
+													name="industry"
+													value={formData.industry}
+													onChange={handleInputChange}
+													placeholder="e.g. Renewable Energy"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="tagline"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Tagline
+												</label>
+												<Input
+													id="tagline"
+													name="tagline"
+													value={formData.tagline}
+													onChange={handleInputChange}
+													placeholder="A short tagline for your organization"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+										</div>
+
+										<div className="space-y-2">
+											<label
+												htmlFor="description"
+												className="text-sm font-semibold text-foreground/80"
+											>
+												Organization Description
+											</label>
+											<textarea
+												id="description"
+												name="description"
+												value={formData.description}
+												onChange={(e) =>
+													setFormData((prev) => ({
+														...prev,
+														description:
+															e.target.value,
+													}))
+												}
+												placeholder="Describe your organization and what you do"
+												className="flex min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+											/>
+										</div>
+									</div>
+
+									{/* Project Details Section */}
+									<div className="space-y-6">
+										<h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">
+											Project Details
+										</h2>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div className="space-y-2">
+												<label
+													htmlFor="projectName"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Project Name*
+												</label>
+												<Input
+													id="projectName"
+													name="projectName"
+													value={formData.projectName}
+													onChange={handleInputChange}
+													placeholder="Name of your carbon removal project"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="projectStatus"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Project Status*
+												</label>
+												<Select
+													value={
+														formData.projectStatus
+													}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"projectStatus",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="projectStatus"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select project status" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{projectStatuses.map(
+															(status) => (
+																<SelectItem
+																	key={status}
+																	value={
+																		status
+																	}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{status}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+												<p className="text-xs text-muted-foreground mt-1">
+													Current development stage of
+													your project
+												</p>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="mcdrType"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													mCDR Type*
+												</label>
+												<Select
+													value={formData.mcdrType}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"mcdrType",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="mcdrType"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select mCDR Type" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{mcdrTypes.map(
+															(type) => (
+																<SelectItem
+																	key={type}
+																	value={type}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{type}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="certifier"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Certifier
+												</label>
+												<Input
+													id="certifier"
+													name="certifier"
+													value={formData.certifier}
+													onChange={handleInputChange}
+													placeholder="e.g. Verra, Gold Standard"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="carbonCredits"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Carbon Credits Issued (To
+													Date)
+												</label>
+												<Input
+													id="carbonCredits"
+													name="carbonCredits"
+													type="number"
+													value={
+														formData.carbonCredits
+													}
+													onChange={handleInputChange}
+													placeholder="e.g. 1000"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="expectedCredits"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Expected Credits (Next 5
+													Years)*
+												</label>
+												<Input
+													id="expectedCredits"
+													name="expectedCredits"
+													type="number"
+													value={
+														formData.expectedCredits
+													}
+													onChange={handleInputChange}
+													placeholder="e.g. 5000"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+												<p className="text-xs text-muted-foreground mt-1">
+													Estimated carbon credits to
+													be issued in the next 5
+													years
+												</p>
+											</div>
+										</div>
+
+										<div className="space-y-2">
+											<label
+												htmlFor="projectDescription"
+												className="text-sm font-semibold text-foreground/80"
+											>
+												Project Description*
+											</label>
+											<textarea
+												id="projectDescription"
+												name="projectDescription"
+												value={
+													formData.projectDescription
+												}
+												onChange={(e) =>
+													setFormData((prev) => ({
+														...prev,
+														projectDescription:
+															e.target.value,
+													}))
+												}
+												placeholder="Describe your carbon removal project in detail"
+												className="flex min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+											/>
+										</div>
+									</div>
+
+									{/* Financial & Team Information */}
+									<div className="space-y-6">
+										<h2 className="text-2xl font-semibold text-primary/80 border-b pb-2">
+											Financial & Team Information
+										</h2>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div className="space-y-2">
+												<label
+													htmlFor="fundingNeeded"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Funding Needed ($)*
+												</label>
+												<Input
+													id="fundingNeeded"
+													name="fundingNeeded"
+													type="number"
+													value={
+														formData.fundingNeeded
+													}
+													onChange={handleInputChange}
+													placeholder="e.g. 500000"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="currentFunding"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Current Funding (All Time)*
+												</label>
+												<Select
+													value={
+														formData.currentFunding
+													}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"currentFunding",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="currentFunding"
+														className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select current funding" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{fundingRanges.map(
+															(range) => (
+																<SelectItem
+																	key={range}
+																	value={
+																		range
+																	}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{range}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+												<p className="text-xs text-muted-foreground mt-1">
+													Total funding raised to date
+												</p>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="revenue"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Annual Revenue Range ($)
+												</label>
+												<Select
+													value={formData.revenue}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"revenue",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="revenue"
+														className="w-full bg-background border border-input transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select revenue range" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{revenueRanges.map(
+															(range) => (
+																<SelectItem
+																	key={range}
+																	value={
+																		range
+																	}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{range}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="teamSize"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Team Size*
+												</label>
+												<Select
+													value={formData.teamSize}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"teamSize",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="teamSize"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select team size" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{teamSizes.map(
+															(size) => (
+																<SelectItem
+																	key={size}
+																	value={size}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{size}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="location"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Location*
+												</label>
+												<Input
+													id="location"
+													name="location"
+													value={formData.location}
+													onChange={handleInputChange}
+													placeholder="City, Country"
+													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label
+													htmlFor="foundingDate"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Founding Date
+												</label>
+												<Popover>
+													<PopoverTrigger asChild>
+														<Button
+															variant="outline"
+															className={cn(
+																"w-full justify-start text-left font-normal transition-all duration-200 focus:ring-2 focus:ring-primary/50",
+																!formData.foundingDate &&
+																	"text-muted-foreground"
+															)}
+														>
+															<CalendarIcon className="mr-2 h-4 w-4" />
+															{formData.foundingDate ? (
+																format(
+																	formData.foundingDate,
+																	"PPP"
+																)
+															) : (
+																<span>
+																	Pick a date
+																</span>
+															)}
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent
+														className="w-auto p-0"
+														align="start"
+													>
+														<Calendar
+															mode="single"
+															selected={
+																formData.foundingDate ||
+																undefined
+															}
+															onSelect={
+																handleDateChange
+															}
+															initialFocus
+															className="rounded-md border shadow-md"
+															weekStartsOn={1}
+															classNames={{
+																month: "space-y-4",
+																caption:
+																	"flex justify-center pt-1 relative items-center",
+																caption_label:
+																	"text-sm font-medium",
+																nav: "space-x-1 flex items-center",
+																nav_button:
+																	"h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+																nav_button_previous:
+																	"absolute left-1",
+																nav_button_next:
+																	"absolute right-1",
+																table: "w-full border-collapse space-y-1",
+																head_row:
+																	"flex w-full -ml-5",
+																head_cell:
+																	"w-full text-muted-foreground rounded-md text-[0.8rem] font-normal",
+																row: "flex w-full mt-2",
+																cell: "text-center h-9 w-9 p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+																day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+																day_selected:
+																	"bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+																day_today:
+																	"bg-accent text-accent-foreground",
+																day_outside:
+																	"text-muted-foreground opacity-50",
+																day_disabled:
+																	"text-muted-foreground opacity-50",
+																day_hidden:
+																	"invisible",
+															}}
+														/>
+													</PopoverContent>
+												</Popover>
+											</div>
+										</div>
+									</div>
+
+									<div className="pt-6">
+										<Button
+											type="submit"
+											className="w-full py-6 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:cursor-pointer"
+											disabled={isSubmitting}
+										>
+											{isSubmitting ? (
+												<span className="flex items-center gap-2">
+													<Loader2 className="h-4 w-4 animate-spin" />
+													Creating Profile...
+												</span>
+											) : (
+												"Create Fundee Profile"
+											)}
+										</Button>
+									</div>
+								</form>
+							)}
+						</CardContent>
+					</Card>
+				</div>
+			</main>
+		</div>
+	);
 };
 
-export default RegisterFunderPage;
+export default RegisterFundeePage;

@@ -1,0 +1,109 @@
+curl -X POST http://localhost:5000/api/risk-score \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trial_data": {
+      "Status": "Operating",
+      "Organization Type": "Start-up",
+      "Primary CDR Method": "Direct Ocean Capture",
+      "Duration of Pilot": "Months",
+      "MRV Provider": "Carbon Plan",
+      "MRV Strategy": "Direct measurement with third-party verification",
+      "Sequestration per year (tons CO2/year)": 500,
+      "Partners or Collaborator": "University of California, NREL, Climate Works"
+    }
+  }'
+
+
+
+  curl -X POST http://localhost:5000/api/efficiency-score \
+  -H "Content-Type: application/json" \
+  -d '{
+    "total_credits": 300,
+    "expected_credits": 1200,
+    "amount_invested": 50000
+  }'
+
+
+  curl -X POST http://localhost:5000/api/impact-score \
+  -H "Content-Type: application/json" \
+  -d '{
+    "total_credits": 1000
+  }'
+
+
+
+  curl -X POST http://localhost:5000/api/goal-alignment \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_description": "We focus on funding innovative direct air capture and ocean-based carbon removal technologies with proven measurement methods and potential for gigaton scale.",
+    "fundee_description": "Our startup is developing a scalable direct ocean capture technology that extracts CO2 from seawater with rigorous measurement protocols to ensure credit validity."
+  }'
+
+
+
+  curl -X POST http://localhost:5000/api/location-match \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_location": [37.7749, -122.4194],
+    "fundee_location": [37.8719, -122.2585]
+  }'
+
+
+  curl -X POST http://localhost:5000/api/funding-capability-match \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_capability": 750000,
+    "fundee_needs": 500000
+  }'
+
+
+  import requests
+import json
+
+BASE_URL = "http://localhost:5000/api"
+
+# Test data for each endpoint
+test_data = {
+    "risk-score": {
+        "trial_data": {
+            "Status": "Operating",
+            "Organization Type": "Start-up",
+            "Primary CDR Method": "Direct Ocean Capture",
+            "Duration of Pilot": "Months",
+            "MRV Provider": "Carbon Plan",
+            "MRV Strategy": "Direct measurement with third-party verification",
+            "Sequestration per year (tons CO2/year)": 500,
+            "Partners or Collaborator": "University of California, NREL, Climate Works"
+        }
+    },
+    "efficiency-score": {
+        "total_credits": 300,
+        "expected_credits": 1200,
+        "amount_invested": 50000
+    },
+    "impact-score": {
+        "total_credits": 1000
+    },
+    "goal-alignment": {
+        "funder_description": "We focus on funding innovative direct air capture and ocean-based carbon removal technologies with proven measurement methods and potential for gigaton scale.",
+        "fundee_description": "Our startup is developing a scalable direct ocean capture technology that extracts CO2 from seawater with rigorous measurement protocols to ensure credit validity."
+    },
+    "location-match": {
+        "funder_location": [37.7749, -122.4194],
+        "fundee_location": [37.8719, -122.2585]
+    },
+    "funding-capability-match": {
+        "funder_capability": 750000,
+        "fundee_needs": 500000
+    }
+}
+
+# Test each endpoint
+for endpoint, data in test_data.items():
+    response = requests.post(f"{BASE_URL}/{endpoint}", json=data)
+    print(f"\n==== Testing {endpoint} ====")
+    print(f"Status code: {response.status_code}")
+    print(f"Response: {json.dumps(response.json(), indent=2)}")
+
+
+    
