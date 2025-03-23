@@ -163,29 +163,29 @@ const mCDR_trials = sequelize.define('mcdr_trials', {
       type: DataTypes.STRING,
       allowNull: false
     },
-    other_leading_organizations: {
-      type: DataTypes.ARRAY(DataTypes.STRING)
+    other_leading_organization: {
+      type: DataTypes.STRING
     },
     organization_type: {
-      type: DataTypes.ARRAY(DataTypes.STRING)
+      type: DataTypes.STRING
     },
     all_cdr_methods: { //provide
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.STRING
     },
     collaborators: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.STRING
     },
     mrv_provider: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.STRING
     },
     mrv_strategy: {
       type: DataTypes.STRING
     },
     monitoring_platforms: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.STRING
     },
     measurements: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.STRING
     },
 },
 {
