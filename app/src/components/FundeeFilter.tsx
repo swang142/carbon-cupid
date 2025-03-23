@@ -135,7 +135,7 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
           </div>
         )}
         
-        <ScrollArea className="pr-3 max-h-[calc(100vh-240px)]">
+        <ScrollArea className="pr-3 max-h-[calc(100vh-240px)] w-full">
           <div className="flex flex-col gap-1">
             {filterCategories.map((category) => (
               <Collapsible
@@ -169,19 +169,29 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                           variant="ghost"
                           size="sm"
                           className={cn(
-                            "justify-start h-8 px-2 text-sm font-normal break-words",
+                            "justify-start px-2 text-sm font-normal w-full h-auto items-start", // items-start aligns checkbox and text to the top
                             isSelected && "bg-primary/10 text-primary"
                           )}
+                          style={{
+                            whiteSpace: "normal",       // Allow text to wrap
+                            wordBreak: "break-word",    // Force wrap on long words
+                          }}
                           onClick={() => toggleFilter(category.id, option)}
                         >
-                          <span className={cn(
-                            "w-4 h-4 mr-2 rounded border flex items-center justify-center",
-                            isSelected ? "bg-primary border-primary" : "border-input"
-                          )}>
+                          {/* Checkbox Icon - keep fixed size and prevent shrinking */}
+                          <span
+                            className={cn(
+                              "w-4 h-4 mr-2 mt-1 shrink-0 rounded border flex items-center justify-center",
+                              isSelected ? "bg-primary border-primary" : "border-input"
+                            )}
+                          >
                             {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
                           </span>
-                          {option}
+
+                          {/* Wrapping Text */}
+                          <span className="flex-1 break-words text-left">{option}</span>
                         </Button>
+
                       );
                     })}
                   </div>

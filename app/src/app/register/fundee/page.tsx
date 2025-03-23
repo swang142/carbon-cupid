@@ -21,7 +21,7 @@ import { CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const stages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C"];
+const stages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"];
 const revenueRanges = [
   "0-100K", 
   "100K-500K", 

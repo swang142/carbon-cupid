@@ -21,7 +21,7 @@ import { CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C"];
+const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"];
 const averageInvestmentSizes = [
   "< $50K", 
   "$50K-$100K", 
@@ -41,7 +41,7 @@ const RegisterFunderPage = () => {
     numberOfInvestments: "",
     lastInvestmentDate: null as Date | null,
     focusAreas: "",
-    fundingStage: "",
+    fundingStage: [] as string[],
     averageInvestmentSize: "",
     location: "",
     geographicFocus: ""
@@ -54,6 +54,17 @@ const RegisterFunderPage = () => {
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMultiSelectChange = (name: string, value: string) => {
+    setFormData(prev => {
+      const currentValues = [...(prev[name as keyof typeof prev] as string[])];
+      if (currentValues.includes(value)) {
+        return { ...prev, [name]: currentValues.filter(item => item !== value) };
+      } else {
+        return { ...prev, [name]: [...currentValues, value] };
+      }
+    });
   };
 
   const handleDateChange = (date: Date | undefined) => {
@@ -178,7 +189,7 @@ const RegisterFunderPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label htmlFor="numberOfInvestments" className="text-sm font-semibold text-foreground/80">
-                        Number of Investments
+                        Number of Past Investments
                       </label>
                       <Input
                         id="numberOfInvestments"
@@ -219,6 +230,27 @@ const RegisterFunderPage = () => {
                             onSelect={handleDateChange}
                             initialFocus
                             className="rounded-md border shadow-md"
+                            weekStartsOn={1}
+                            classNames={{
+                              month: "space-y-4",
+                              caption: "flex justify-center pt-1 relative items-center",
+                              caption_label: "text-sm font-medium",
+                              nav: "space-x-1 flex items-center",
+                              nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                              nav_button_previous: "absolute left-1",
+                              nav_button_next: "absolute right-1",
+                              table: "w-full border-collapse space-y-1",
+                              head_row: "flex w-full -ml-5",
+                              head_cell: "w-full text-muted-foreground rounded-md text-[0.8rem] font-normal",
+                              row: "flex w-full mt-2",
+                              cell: "text-center h-9 w-9 p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                              day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                              day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                              day_today: "bg-accent text-accent-foreground",
+                              day_outside: "text-muted-foreground opacity-50",
+                              day_disabled: "text-muted-foreground opacity-50",
+                              day_hidden: "invisible",
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
@@ -226,23 +258,24 @@ const RegisterFunderPage = () => {
 
                     <div className="space-y-2">
                       <label htmlFor="fundingStage" className="text-sm font-semibold text-foreground/80">
-                        Funding Stage
+                        Preferred Funding Stages
                       </label>
-                      <Select
-                        value={formData.fundingStage}
-                        onValueChange={(value: string) => handleSelectChange("fundingStage", value)}
-                      >
-                        <SelectTrigger id="fundingStage" className="w-full border border-black focus:ring-2 focus:ring-primary/50">
-                          <SelectValue placeholder="Select preferred funding stage" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border rounded-md shadow-md">
-                          {fundingStages.map((stage) => (
-                            <SelectItem key={stage} value={stage} className="cursor-pointer z-150 hover:bg-accent">
+                      <div className="border rounded-md p-3 space-y-2 border-input bg-background">
+                        {fundingStages.map((stage) => (
+                          <div key={stage} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`stage-${stage}`}
+                              checked={(formData.fundingStage as string[]).includes(stage)}
+                              onChange={() => handleMultiSelectChange("fundingStage", stage)}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <label htmlFor={`stage-${stage}`} className="text-sm">
                               {stage}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
