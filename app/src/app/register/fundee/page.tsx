@@ -263,7 +263,11 @@ const RegisterFundeePage = () => {
 			// Upload logo if a file was selected
 			let logoUrl = null;
 			if (formData.logoFile && result.data?.id) {
-				logoUrl = await uploadLogo(formData.logoFile, result.data.id);
+				logoUrl = await uploadLogo(
+					formData.logoFile,
+					result.data.id,
+					formData.organizationName // Pass organization name for better file naming
+				);
 
 				// If logo upload was successful, update the fundee record with the logo URL
 				if (logoUrl) {
