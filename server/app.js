@@ -30,48 +30,9 @@ app.get("/api/health", async (req, res) => {
 	}
 });
 
+//Call 
 
 
-// Get all rows from a table
-// app.get("/api/funders", async (req, res) => {
-// 	try {
-
-// 		// You can add query parameters for filtering, pagination, etc.
-// 		const { limit, offset, sort } = req.query;
-
-// 		let query = supabase.from("funders").select("*");
-
-// 		// Apply pagination if provided
-// 		if (limit) query = query.limit(parseInt(limit));
-// 		if (offset)
-// 			query = query.range(
-// 				parseInt(offset),
-// 				parseInt(offset) + (parseInt(limit) || 10) - 1
-// 			);
-
-// 		// Apply sorting if provided (format: column:asc or column:desc)
-// 		if (sort) {
-// 			const [column, order] = sort.split(":");
-// 			query = query.order(column, { ascending: order !== "desc" });
-// 		}
-
-// 		const { data, error } = await query;
-
-// 		if (error) throw error;
-
-// 		res.json({
-// 			success: true,
-// 			data,
-// 			count: data.length,
-// 		});
-// 	} catch (err) {
-// 		console.error("Error fetching data:", err);
-// 		res.status(500).json({
-// 			success: false,
-// 			error: err.message || "Failed to fetch data",
-// 		});
-// 	}
-// });
 
 sequelize.authenticate()
     .then(() => {

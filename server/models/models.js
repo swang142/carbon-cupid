@@ -149,10 +149,11 @@ const Funders = sequelize.define('funderstable', {
 
 const mCDR_trials = sequelize.define('mcdr_trials', {
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        allowNull: false,
-        primaryKey: true
+      type: DataTypes.INTEGER,
+      defaultValue: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true
     },
     trial_name: {
       type: DataTypes.STRING,
