@@ -13,11 +13,10 @@ from google import genai  # This is the correct import
 
 
 # Load environment variables first
-load_dotenv(dotenv_path='secret.env')
 
 
 # Get the API key
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = "AIzaSyCeORuJZ_Ga9UEBFAhBwJLL-zIQCRujGKw"
 print(f"API Key loaded: {'Yes' if GEMINI_API_KEY else 'No'}")
 
 # Import Gemini and initialize client (only once)
@@ -67,6 +66,10 @@ def calculate_risk_score(data):
     total_credits = data.get('total_credits', 0)
     expected_credits = data.get('expected_credits', 0)
     amount_invested = data.get('amount_invested', 0)
+    
+    print(data)
+
+    print(f"Input: total_credits={total_credits}, expected_credits={expected_credits}, amount_invested={amount_invested}")
     
     # Start with a baseline risk score
     risk_score = 50
@@ -323,6 +326,7 @@ def calculate_funding_capability_match(funder_capability, fundee_needs):
 def risk_score_endpoint():
     try:
         data = request.json
+
         
         # Create data dictionary with only the necessary fields
         risk_data = {
