@@ -631,7 +631,7 @@ const RegisterFunderPage = () => {
 									<div className="pt-6">
 										<Button
 											type="submit"
-											className="w-full py-6 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+											className="w-full py-6 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:cursor-pointer"
 											disabled={isSubmitting}
 										>
 											{isSubmitting ? (
