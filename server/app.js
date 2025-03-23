@@ -19,7 +19,6 @@ app.use(express.json());
 app.use("/api/fundees", fundeeRoutes);
 app.use("/api/funders", funderRoutes);
 app.use("/api/mcdrs", mcdrRoutes);
-app.use("/api/flask", flaskApiRoutes); // Add Flask API routes
 
 // Basic connection test
 app.get("/api/health", async (req, res) => {
