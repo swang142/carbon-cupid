@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Progress } from "@/components/Progress";
 import { FundingProgressBar } from "@/components/ui/progress-bar"
 import {
   Drawer,
@@ -16,7 +17,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
-import { ArrowUpRight, BarChart3, Calendar, Users } from "lucide-react"
+import { ArrowUpRight, BarChart3, Calendar, Users, Zap, Leaf } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const googleMapsApiKey = process.env.NEXT_PUBLIC_MAP_API;
@@ -72,6 +73,11 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
     return () => clearTimeout(timer)
   }, [priority])
 
+  // Ensure scores are numbers between 0-100
+  const matchScore = Math.min(100, Math.max(0, fundee.match || 0));
+  const efficiencyScore = Math.min(100, Math.max(0, fundee.efficiency_score || 0));
+  const impactScore = Math.min(100, Math.max(0, fundee.impact_score || 0));
+
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -109,7 +115,7 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
             <div className="absolute top-3 right-3">
               <Badge variant="secondary" className="flex items-center gap-1 font-medium px-2.5 py-1">
                 <BarChart3 className="h-3.5 w-3.5" />
-                {fundee.match}% Match
+                {matchScore}% Match
               </Badge>
             </div>
           </div>
@@ -128,6 +134,45 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
               <p className="text-sm text-muted-foreground leading-snug">
                 {fundee.mcdr_type}
               </p>
+              
+              {/* Flask API Statistics Section */}
+              <div className="space-y-2 mt-1 mb-1">
+                {/* Efficiency Score */}
+                <div className="flex items-center gap-2">
+                  <Zap className="h-3.5 w-3.5 text-amber-500" />
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-muted-foreground">Efficiency</span>
+                      <span className="font-medium">{efficiencyScore}%</span>
+                    </div>
+                    <Progress value={efficiencyScore} className="h-1" />
+                  </div>
+                </div>
+                
+                {/* Impact Score */}
+                <div className="flex items-center gap-2">
+                  <Leaf className="h-3.5 w-3.5 text-green-500" />
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-muted-foreground">Impact</span>
+                      <span className="font-medium">{impactScore}%</span>
+                    </div>
+                    <Progress value={impactScore} className="h-1" />
+                  </div>
+                </div>
+                
+                {/* Match Score */}
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-3.5 w-3.5 text-blue-500" />
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-0.5">
+                      <span className="text-muted-foreground">Match</span>
+                      <span className="font-medium">{matchScore}%</span>
+                    </div>
+                    <Progress value={matchScore} className="h-1" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -153,7 +198,6 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
                 <Badge variant="outline" className="bg-primary/5 border-primary/20 text-primary text-xs flex-1 text-center">
                   {fundee.funding_requested}
                 </Badge>
-
               </div>
               <div className="flex gap-2 w-full">
                 <Badge variant="secondary" className="text-xs flex-1 text-center">
@@ -188,6 +232,46 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
 
         <div className="px-4 pb-4 space-y-6 text-sm">
           <p className="text-muted-foreground">{fundee.company_description}</p>
+          
+          {/* Flask API Statistics in Drawer */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="p-3 rounded-lg bg-secondary/10">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="h-4 w-4 text-blue-500" />
+                <div className="font-medium">Match Score</div>
+              </div>
+              <div className="text-2xl font-bold">{matchScore}%</div>
+              <Progress value={matchScore} className="h-1.5 mt-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Overall compatibility score
+              </p>
+            </div>
+            
+            <div className="p-3 rounded-lg bg-secondary/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="h-4 w-4 text-amber-500" />
+                <div className="font-medium">Efficiency</div>
+              </div>
+              <div className="text-2xl font-bold">{efficiencyScore}%</div>
+              <Progress value={efficiencyScore} className="h-1.5 mt-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Credits per dollar invested
+              </p>
+            </div>
+            
+            <div className="p-3 rounded-lg bg-secondary/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Leaf className="h-4 w-4 text-green-500" />
+                <div className="font-medium">Impact</div>
+              </div>
+              <div className="text-2xl font-bold">{impactScore}%</div>
+              <Progress value={impactScore} className="h-1.5 mt-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Carbon removal potential
+              </p>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <div className="flex flex-col gap-2 text-sm text-foreground">
               <div className="flex justify-between">
@@ -290,7 +374,6 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
           </DrawerClose>
         </div>
       </DrawerContent>
-
     </Drawer>
   )
 }
