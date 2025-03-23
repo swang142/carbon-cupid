@@ -1,5 +1,6 @@
+// src/app/fundees/page.tsx
 "use client";
-import { useState, useCallback, useEffect, use } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { FundeeFilter } from "@/components/FundeeFilter";
 import { FundeeList } from "@/components/FundeeList";
@@ -79,8 +80,10 @@ export default function FundeesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filters, setFilters] = useState<Record<string, string[]>>({});
 	const [isLoading, setIsLoading] = useState(true);
+	const [isCalculatingScores, setIsCalculatingScores] = useState(false);
 	const [allFundees, setAllFundees] = useState<FundeeData[]>([]);
 	const [filteredFundees, setFilteredFundees] = useState<FundeeData[]>([]);
+	const isMobile = useIsMobile();
 
 	useEffect(() => {
 		async function fetchFundees() {
@@ -88,6 +91,7 @@ export default function FundeesPage() {
 			try {
 				const response = await api.fundees.getAll();
 				if (response.success) {
+					// First set fundees with default scores
 					const fundeeData = response.data.map((fundee: any) => ({
 						...fundee,
 						logo: null,
@@ -102,12 +106,16 @@ export default function FundeesPage() {
 
 					setAllFundees(fundeeData);
 					setFilteredFundees(fundeeData);
+					setIsLoading(false);
+					
+					// Then calculate real scores
+					calculateScores(fundeeData);
 				} else {
 					console.error("Failed to fetch fundees:", response);
+					setIsLoading(false);
 				}
 			} catch (error) {
 				console.error("Error fetching fundees:", error);
-			} finally {
 				setIsLoading(false);
 			}
 		}
@@ -115,16 +123,73 @@ export default function FundeesPage() {
 		fetchFundees();
 	}, []);
 
+	// Calculate scores from Flask API
+	const calculateScores = async (fundees: FundeeData[]) => {
+		setIsCalculatingScores(true);
+		
+		try {
+			// Process in batches to avoid overwhelming the API
+			const BATCH_SIZE = 3; // Process 3 at a time
+			const updatedFundees = [...fundees];
+			
+			// Default funder ID
+			const funderId = 1;
+			
+			for (let i = 0; i < fundees.length; i += BATCH_SIZE) {
+				const batchFundees = fundees.slice(i, i + BATCH_SIZE);
+				
+				// Calculate scores for each fundee in the batch
+				const scorePromises = batchFundees.map(fundee => 
+					api.flask.calculateTopScores(fundee.id, funderId)
+				);
+				
+				// Wait for all calculations to complete
+				const scoreResults = await Promise.all(scorePromises);
+				
+				// Update fundees with calculated scores
+				scoreResults.forEach((result, index) => {
+					if (result.success) {
+						const fundeeIndex = i + index;
+						if (fundeeIndex < updatedFundees.length) {
+							updatedFundees[fundeeIndex] = {
+								...updatedFundees[fundeeIndex],
+								efficiency_score: result.scores.efficiency_score,
+								impact_score: result.scores.impact_score,
+								match: result.scores.match_score
+							};
+						}
+					}
+				});
+			}
+			
+			// Update state with calculated scores
+			setAllFundees(updatedFundees);
+			
+			// Update filtered list
+			const filtered = filterFundees(
+				searchFundees(updatedFundees, searchQuery), 
+				filters
+			);
+			setFilteredFundees(filtered);
+		} catch (error) {
+			console.error("Error calculating scores:", error);
+		} finally {
+			setIsCalculatingScores(false);
+		}
+	};
+
+	// Handle search
 	const handleSearch = useCallback(
 		(query: string) => {
 			setSearchQuery(query);
 			setIsLoading(true);
 
+			// Process the search
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, query);
 				setFilteredFundees(filterFundees(searchResults, filters));
 				setIsLoading(false);
-			}, 800);
+			}, 300);
 		},
 		[filters, allFundees]
 	);
@@ -134,11 +199,12 @@ export default function FundeesPage() {
 			setFilters(newFilters);
 			setIsLoading(true);
 
+			// Process the filters
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, searchQuery);
 				setFilteredFundees(filterFundees(searchResults, newFilters));
 				setIsLoading(false);
-			}, 600);
+			}, 300);
 		},
 		[searchQuery, allFundees]
 	);
@@ -183,13 +249,15 @@ export default function FundeesPage() {
 											<p className="text-sm text-muted-foreground animate-fade-in">
 												{isLoading
 													? "Finding the best matches for you..."
+													: isCalculatingScores
+													? "Calculating match scores..."
 													: `Showing ${filteredFundees.length} fundees`}
 											</p>
 										</div>
 
 										<FundeeList
 											fundees={filteredFundees}
-											isLoading={isLoading}
+											isLoading={isLoading || isCalculatingScores}
 											searchQuery={searchQuery}
 										/>
 									</div>
