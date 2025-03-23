@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import supabase from "./config/database.js";
+import { supabase } from "./config/database.js";
 import fundeeRoutes from "./routes/fundeeRoutes.js";
 
 const app = express();
