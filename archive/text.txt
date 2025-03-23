@@ -1,0 +1,357 @@
+import torch
+import numpy as np
+from transformers import AutoTokenizer, AutoModel
+from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+import re
+from geopy.distance import geodesic
+
+class CarbonMatchmaker:
+    def __init__(self, model_name="sentence-transformers/all-mpnet-base-v2"):
+        # Load sentence transformer model for embeddings
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
+        
+    def get_embedding(self, text):
+        """Generate embedding for text using the model"""
+        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512).to(self.device)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+        # Use mean pooling of token embeddings
+        embedding = outputs.last_hidden_state.mean(dim=1).cpu().numpy()
+        return embedding
+    
+    def normalize_funding_match(self, funder_amount, fundee_requested):
+        """Calculate funding match score (0-1) based on how well amounts align"""
+        if funder_amount >= fundee_requested:
+            # Funder can fully fund the request
+            return 1.0
+        else:
+            # Partial funding possible - score based on percentage
+            return funder_amount / fundee_requested if fundee_requested > 0 else 0
+    
+    def calculate_location_score(self, funder_locations, fundee_locations):
+        """Calculate location compatibility score (0-1)"""
+        if not funder_locations or not fundee_locations:
+            return 0.5  # Neutral if locations not specified
+        
+        # Check for exact matches
+        exact_matches = set(funder_locations).intersection(set(fundee_locations))
+        if exact_matches:
+            return 1.0
+        
+        # Calculate with geocoding for more sophisticated matching
+        # For simplicity here, we're assuming text-based matching
+        # In practice, you would use lat/long coordinates and geodesic distance
+        
+        # Simple region matching (assuming format like "North America", "Southeast Asia")
+        funder_regions = set([loc.split()[0] for loc in funder_locations if ' ' in loc])
+        fundee_regions = set([loc.split()[0] for loc in fundee_locations if ' ' in loc])
+        
+        if funder_regions.intersection(fundee_regions):
+            return 0.7
+        
+        return 0.3  # Default low score for no location match
+    
+    def extract_risk_tolerance(self, description):
+        """Extract risk tolerance from text description or use default value"""
+        # Define risk tolerance levels and their numeric values
+        risk_levels = {
+            "very low": 0.1,
+            "low": 0.3,
+            "moderate": 0.5,
+            "medium": 0.5,
+            "high": 0.7,
+            "very high": 0.9
+        }
+        
+        # Look for risk tolerance mentions in the description
+        for level, value in risk_levels.items():
+            if f"risk tolerance: {level}" in description.lower() or f"risk: {level}" in description.lower():
+                return value
+                
+        # Default to medium if not specified
+        return 0.5
+    
+    def estimate_impact_score(self, description):
+        """Estimate impact score from description using key phrases"""
+        impact_terms = {
+            "carbon capture": 0.6,
+            "carbon sequestration": 0.7,
+            "carbon offset": 0.5,
+            "carbon removal": 0.6,
+            "negative emissions": 0.7,
+            "blue carbon": 0.7,
+            "kelp farming": 0.8,
+            "macroalgae": 0.8,
+            "seaweed farming": 0.8,
+            "ocean alkalinization": 0.7,
+            "direct air capture": 0.6,
+            "mangrove restoration": 0.8,
+            "coastal wetlands": 0.7
+        }
+        
+        # Calculate impact score based on presence of key terms
+        score = 0.4  # Base score
+        matches = 0
+        
+        for term, value in impact_terms.items():
+            if term in description.lower():
+                score += value
+                matches += 1
+        
+        # Average the score if we found matches
+        if matches > 0:
+            score = score / (matches + 1)  # +1 for the base score
+            
+        # Look for quantitative metrics
+        tons_pattern = r"(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:tons|tonnes)"
+        tons_matches = re.findall(tons_pattern, description, re.IGNORECASE)
+        
+        if tons_matches:
+            try:
+                tons = float(tons_matches[0].replace(',', ''))
+                # Scale based on magnitude (logarithmic scale)
+                if tons > 1000000:  # 1M+ tons
+                    score = min(score + 0.3, 1.0)
+                elif tons > 100000:  # 100k+ tons
+                    score = min(score + 0.2, 1.0)
+                elif tons > 10000:  # 10k+ tons
+                    score = min(score + 0.1, 1.0)
+            except:
+                pass
+        
+        return min(score, 1.0)  # Cap at 1.0
+    
+    def estimate_efficiency(self, description):
+        """Estimate efficiency score based on cost per ton or similar metrics"""
+        # Look for efficiency metrics in the description
+        efficiency_score = 0.5  # Default medium efficiency
+        
+        # Pattern for cost per ton
+        cost_pattern = r"\$(\d+(?:\.\d+)?)\s*(?:per|\/)\s*(?:ton|tonne)"
+        cost_matches = re.findall(cost_pattern, description, re.IGNORECASE)
+        
+        if cost_matches:
+            try:
+                cost_per_ton = float(cost_matches[0])
+                # Scale based on cost efficiency
+                if cost_per_ton < 50:  # Very efficient
+                    efficiency_score = 0.9
+                elif cost_per_ton < 100:
+                    efficiency_score = 0.8
+                elif cost_per_ton < 200:
+                    efficiency_score = 0.7
+                elif cost_per_ton < 500:
+                    efficiency_score = 0.6
+                else:
+                    efficiency_score = 0.4  # Less efficient
+            except:
+                pass
+        
+        # Look for ROI mentions
+        if "roi" in description.lower() or "return on investment" in description.lower():
+            roi_pattern = r"(\d+(?:\.\d+)?)\s*%\s*(?:roi|return)"
+            roi_matches = re.findall(roi_pattern, description, re.IGNORECASE)
+            
+            if roi_matches:
+                try:
+                    roi = float(roi_matches[0])
+                    if roi > 20:
+                        efficiency_score = max(efficiency_score, 0.8)
+                    elif roi > 10:
+                        efficiency_score = max(efficiency_score, 0.7)
+                except:
+                    pass
+        
+        return efficiency_score
+    
+    def get_semantic_similarity(self, funder_desc, fundee_desc):
+        """Calculate semantic similarity between funder and fundee mission/descriptions"""
+        funder_embedding = self.get_embedding(funder_desc)
+        fundee_embedding = self.get_embedding(fundee_desc)
+        
+        # Calculate cosine similarity
+        similarity = cosine_similarity(funder_embedding, fundee_embedding)[0][0]
+        return similarity
+    
+    def rank_matches(self, funder, fundees, weights=None):
+        """
+        Rank fundees for a funder based on multiple criteria
+        
+        Parameters:
+        - funder: Dict with funder data
+        - fundees: List of fundee dicts
+        - weights: Dict defining weights for different factors
+        
+        Returns:
+        - Ranked list of fundees with match scores
+        """
+        # Default weights if not provided
+        if weights is None:
+            weights = {
+                'mission_alignment': 0.3,
+                'funding_match': 0.2,
+                'risk_compatibility': 0.15,
+                'impact_score': 0.2,
+                'location': 0.1,
+                'efficiency': 0.05
+            }
+        
+        results = []
+        
+        # Process funder data
+        funder_description = f"{funder.get('name', 'Unknown')} is a funding organization with mission: {funder.get('mission', '')}. "
+        funder_description += f"Focus areas: {', '.join(funder.get('focus_areas', []))}. "
+        funder_funding_capacity = funder.get('funding_capacity', 0)
+        funder_risk_tolerance = self.extract_risk_tolerance(funder.get('risk_profile', ''))
+        funder_locations = funder.get('locations', [])
+        
+        for fundee in fundees:
+            # Process fundee data
+            fundee_description = f"{fundee.get('name', 'Unknown')} is an organization with mission: {fundee.get('mission', '')}. "
+            fundee_description += f"Focus areas: {', '.join(fundee.get('focus_areas', []))}. "
+            fundee_description += f"Project description: {fundee.get('project_description', '')}. "
+            fundee_description += f"Expected impact: {fundee.get('impact_description', '')}."
+            
+            fundee_funding_needs = fundee.get('funding_required', 0)
+            fundee_risk_level = self.extract_risk_tolerance(fundee.get('risk_profile', ''))
+            fundee_locations = fundee.get('locations', [])
+            
+            # Calculate individual scores
+            mission_alignment = self.get_semantic_similarity(funder_description, fundee_description)
+            funding_match = self.normalize_funding_match(funder_funding_capacity, fundee_funding_needs)
+            
+            # Risk compatibility (1.0 if perfectly aligned, 0.0 if completely misaligned)
+            risk_compatibility = 1.0 - abs(funder_risk_tolerance - fundee_risk_level)
+            
+            location_score = self.calculate_location_score(funder_locations, fundee_locations)
+            impact_score = self.estimate_impact_score(fundee_description)
+            efficiency_score = self.estimate_efficiency(fundee_description)
+            
+            # Calculate weighted composite score
+            composite_score = (
+                weights['mission_alignment'] * mission_alignment +
+                weights['funding_match'] * funding_match +
+                weights['risk_compatibility'] * risk_compatibility +
+                weights['impact_score'] * impact_score +
+                weights['location'] * location_score +
+                weights['efficiency'] * efficiency_score
+            )
+            
+            # Compile detailed results
+            match_details = {
+                'fundee_name': fundee.get('name', 'Unknown'),
+                'composite_score': composite_score,
+                'mission_alignment': mission_alignment,
+                'funding_match': funding_match,
+                'risk_compatibility': risk_compatibility,
+                'impact_score': impact_score,
+                'location_score': location_score,
+                'efficiency_score': efficiency_score,
+                'fundee_data': fundee
+            }
+            
+            results.append(match_details)
+        
+        # Sort by composite score (descending)
+        results.sort(key=lambda x: x['composite_score'], reverse=True)
+        return results
+
+
+# Example usage with synthetic data generation
+def generate_example_data():
+    """Generate synthetic data for demonstration"""
+    # Generate sample funders
+    funders = [
+        {
+            'name': 'OceanBlue Ventures',
+            'mission': 'Investing in blue carbon solutions and ocean-based climate technologies.',
+            'focus_areas': ['blue carbon', 'ocean restoration', 'climate tech'],
+            'funding_capacity': 5000000,  # $5M
+            'risk_profile': 'Risk tolerance: Medium',
+            'locations': ['North America', 'Europe', 'Southeast Asia']
+        },
+        {
+            'name': 'GreenImpact Fund',
+            'mission': 'Supporting innovative climate solutions with measurable carbon reduction.',
+            'focus_areas': ['carbon sequestration', 'renewable energy', 'sustainability'],
+            'funding_capacity': 10000000,  # $10M
+            'risk_profile': 'Risk tolerance: High',
+            'locations': ['Global', 'Africa', 'South America']
+        }
+    ]
+    
+    # Generate sample fundees
+    fundees = [
+        {
+            'name': 'SeaForest Initiative',
+            'mission': 'Scaling macroalgae cultivation for carbon sequestration.',
+            'focus_areas': ['kelp farming', 'blue carbon', 'ocean restoration'],
+            'project_description': 'Deploying large-scale kelp farms in coastal waters to sequester carbon and improve ocean health.',
+            'impact_description': 'Projected to sequester 50,000 tonnes of CO2 annually at $80 per ton, with 15% ROI.',
+            'funding_required': 2500000,  # $2.5M
+            'risk_profile': 'Risk: Moderate',
+            'locations': ['Southeast Asia', 'Australia']
+        },
+        {
+            'name': 'CoralCarbon',
+            'mission': 'Restoring coral reefs while generating blue carbon credits.',
+            'focus_areas': ['coral restoration', 'blue carbon credits', 'marine conservation'],
+            'project_description': 'Using innovative techniques to accelerate coral growth and capture carbon in reef systems.',
+            'impact_description': 'Expected to restore 500 hectares of reef and sequester 10,000 tonnes of CO2 per year.',
+            'funding_required': 1800000,  # $1.8M
+            'risk_profile': 'Risk: High',
+            'locations': ['Caribbean', 'Pacific Islands']
+        },
+        {
+            'name': 'OceanAlkalinityPlus',
+            'mission': 'Developing ocean alkalinization methods to enhance carbon absorption.',
+            'focus_areas': ['ocean alkalinization', 'negative emissions', 'ocean chemistry'],
+            'project_description': 'Field testing enhanced weathering techniques in controlled marine environments.',
+            'impact_description': 'Potential to remove 100,000+ tonnes of CO2 at scale, currently at pilot phase with $150 per ton cost.',
+            'funding_required': 3500000,  # $3.5M
+            'risk_profile': 'Risk: Very High',
+            'locations': ['North Atlantic', 'Europe']
+        }
+    ]
+    
+    return funders, fundees
+
+
+def demonstrate_matching():
+    """Demonstrate the matching system with sample data"""
+    funders, fundees = generate_example_data()
+    
+    matchmaker = CarbonMatchmaker()
+    
+    # Custom weights emphasizing impact and efficiency
+    custom_weights = {
+        'mission_alignment': 0.25,
+        'funding_match': 0.15,
+        'risk_compatibility': 0.1,
+        'impact_score': 0.3,
+        'location': 0.1,
+        'efficiency': 0.1
+    }
+    
+    # Rank matches for each funder
+    for funder in funders:
+        print(f"\nMatches for {funder['name']}:")
+        matches = matchmaker.rank_matches(funder, fundees, weights=custom_weights)
+        
+        for i, match in enumerate(matches):
+            print(f"{i+1}. {match['fundee_name']} - Score: {match['composite_score']:.2f}")
+            print(f"   Mission Alignment: {match['mission_alignment']:.2f}")
+            print(f"   Funding Match: {match['funding_match']:.2f}")
+            print(f"   Risk Compatibility: {match['risk_compatibility']:.2f}")
+            print(f"   Impact Score: {match['impact_score']:.2f}")
+            print(f"   Location Score: {match['location_score']:.2f}")
+            print(f"   Efficiency Score: {match['efficiency_score']:.2f}")
+            print("")
+
+
+if __name__ == "__main__":
+    demonstrate_matching()
