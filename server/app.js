@@ -8,7 +8,7 @@ import mcdrRoutes from "./routes/mcdrRoutes.js";
 
 const app = express();
 
-app.use( cors());
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/fundees", fundeeRoutes);
@@ -30,21 +30,17 @@ app.get("/api/health", async (req, res) => {
 	}
 });
 
-//Call 
-
-
-
-sequelize.authenticate()
-    .then(() => {
-        console.log("Connection established successfully");
-        return sequelize.sync({ alter: true }); // This will create/update tables
-    })
-    .then(() => {
-        console.log("Database synchronized successfully");
-    })
-    .catch((err) => {
-        console.error("Database connection/sync error:", err);
-    });
-
+sequelize
+	.authenticate()
+	.then(() => {
+		console.log("Connection established successfully");
+		return sequelize.sync({ alter: true }); // This will create/update tables
+	})
+	.then(() => {
+		console.log("Database synchronized successfully");
+	})
+	.catch((err) => {
+		console.error("Database connection/sync error:", err);
+	});
 
 export default app;
