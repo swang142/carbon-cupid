@@ -166,11 +166,36 @@ const RegisterFundeePage = () => {
 				funding_requested: parseInt(formData.fundingNeeded) || 0,
 				certifier: formData.certifier || null,
 				method: true, // Default value
-				current_funding: formData.currentFunding || "0", // Use the selected value
 				total_credits_issued: parseInt(formData.carbonCredits) || 0,
 				expected_credits: parseInt(formData.expectedCredits) || 0,
 				rawscore: 0, // This will be calculated by the backend
 			};
+
+			// Convert current funding from string range to numeric value
+			if (formData.currentFunding) {
+				let currentFundingValue = 0;
+
+				// Parse funding range into numeric values
+				if (formData.currentFunding === "0") {
+					currentFundingValue = 0;
+				} else if (formData.currentFunding === "<$100K") {
+					currentFundingValue = 50000; // Average of 0-100K
+				} else if (formData.currentFunding === "$100K-$500K") {
+					currentFundingValue = 300000; // Average of 100K-500K
+				} else if (formData.currentFunding === "$500K-$1M") {
+					currentFundingValue = 750000; // Average of 500K-1M
+				} else if (formData.currentFunding === "$1M-$5M") {
+					currentFundingValue = 3000000; // Average of 1M-5M
+				} else if (formData.currentFunding === "$5M-$10M") {
+					currentFundingValue = 7500000; // Average of 5M-10M
+				} else if (formData.currentFunding === ">$10M") {
+					currentFundingValue = 15000000; // Arbitrary value for >10M
+				}
+
+				fundeeData.current_funding = currentFundingValue;
+			} else {
+				fundeeData.current_funding = 0;
+			}
 
 			// Get coordinates from location
 			if (formData.location) {

@@ -1,0 +1,23 @@
+CREATE TABLE fundeetable (
+    id INT PRIMARY KEY,
+    longitude FLOAT NOT NULL,
+    latitude FLOAT NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    company_description TEXT NOT NULL,
+    website VARCHAR(255) DEFAULT 'unknown',
+    contact VARCHAR(255) DEFAULT 'unknown',
+    headcount VARCHAR(255) NOT NULL,
+    project_name VARCHAR(255) NOT NULL,
+    project_description TEXT NOT NULL,
+    project_status VARCHAR(255) NOT NULL,
+    method BOOLEAN DEFAULT TRUE,
+    certifier VARCHAR(255) DEFAULT NULL,
+    mcdr_type VARCHAR(255) NOT NULL,
+    founding_year INT NOT NULL,
+    stage VARCHAR(255) NOT NULL,
+    current_funding INT DEFAULT 0,
+    funding_requested INT NOT NULL,
+    total_credits_issued INT DEFAULT 0,
+    expected_credits INT DEFAULT 0,
+    rawscore INT DEFAULT 0
+);
