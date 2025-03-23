@@ -62,9 +62,9 @@ app.get("/api/calc-base-scores/:id", async (req, res) => {
             fundee_location: [fundee.dataValues.longitude, fundee.dataValues.latitude],
             fundee_needs: fundee.dataValues.current_funding,
         }
-        const risk_score_data = await axios.post("http://127.0.0.1:5000/api/risk-score", fundee_reformatted)
-        const efficiency_score_data = await axios.post("http://127.0.0.1:5000/api/efficiency-score", fundee_reformatted)
-        const impact_score = await axios.post("http://127.0.0.1:5000/api/impact-score", fundee_reformatted)
+        const risk_score_data = await axios.post("http://127.0.0.1:5001/api/risk-score", fundee_reformatted)
+        const efficiency_score_data = await axios.post("http://127.0.0.1:5001/api/efficiency-score", fundee_reformatted)
+        const impact_score = await axios.post("http://127.0.0.1:5001/api/impact-score", fundee_reformatted)
 
         await fundee.update({   
             risk_score: risk_score_data.data.risk_score,
@@ -94,9 +94,9 @@ app.post("/api/calc-dynamic-scores", async (req, res) => {
             fundee_needs: fundee.dataValues.current_funding,
         }
 
-        const goal_alignment = await axios.post("http://127.0.0.1:5000/api/goal-alignment", data_reformatted);
-        const location_match = await axios.post("http://127.0.0.1:5000/api/location-match", data_reformatted);
-        const funding_capability_match = await axios.post("http://127.0.0.1:5000/api/funding-capability-match", data_reformatted);
+        const goal_alignment = await axios.post("http://127.0.0.1:5001/api/goal-alignment", data_reformatted);
+        const location_match = await axios.post("http://127.0.0.1:5001/api/location-match", data_reformatted);
+        const funding_capability_match = await axios.post("http://127.0.0.1:5001/api/funding-capability-match", data_reformatted);
 
         res.status(200).send([goal_alignment.data, location_match.data, funding_capability_match.data])
 
