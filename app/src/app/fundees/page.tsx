@@ -11,13 +11,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
-
 function searchFundees(fundees: FundeeData[], query: string): FundeeData[] {
 	if (!query.trim()) return fundees;
 
 	const lowercaseQuery = query.toLowerCase();
 	return fundees.filter((fundee) => {
-
 		return (
 			fundee.company_name.toLowerCase().includes(lowercaseQuery) ||
 			fundee.mcdr_type.toLowerCase().includes(lowercaseQuery) ||
@@ -42,7 +40,7 @@ function filterFundees(
 	return fundees.filter((fundee) => {
 		// Check each filter category
 		for (const [key, values] of Object.entries(filters)) {
-			if (values.length === 0) continue; 
+			if (values.length === 0) continue;
 
 			switch (key) {
 				case "stage":
@@ -91,23 +89,40 @@ export default function FundeesPage() {
 			try {
 				const response = await api.fundees.getAll();
 				if (response.success) {
+					// Log the raw data to debug logo_url
+					console.log("Raw fundee data:", response.data);
+
 					// First set fundees with default scores
-					const fundeeData = response.data.map((fundee: any) => ({
-						...fundee,
-						logo: null,
-						risk_score: Math.floor(Math.random() * 100),
-						efficiency_score: Math.floor(Math.random() * 100),
-						impact_score: Math.floor(Math.random() * 100),
-						goal_alignment_score: null,
-						location_score: null,
-						funding_score: null,
-						match: Math.floor(Math.random() * 100),
-					}));
+					const fundeeData = response.data.map((fundee: any) => {
+						// Check if logo_url exists and log it for debugging
+						if (fundee.logo_url) {
+							console.log(
+								`✅ Fundee ${fundee.id} (${fundee.company_name}) has logo_url:`,
+								fundee.logo_url
+							);
+						} else {
+							console.warn(
+								`⚠️ Fundee ${fundee.id} (${fundee.company_name}) missing logo_url`
+							);
+						}
+
+						return {
+							...fundee,
+							logo: fundee.logo_url || null,
+							risk_score: Math.floor(Math.random() * 100),
+							efficiency_score: Math.floor(Math.random() * 100),
+							impact_score: Math.floor(Math.random() * 100),
+							goal_alignment_score: null,
+							location_score: null,
+							funding_score: null,
+							match: Math.floor(Math.random() * 100),
+						};
+					});
 
 					setAllFundees(fundeeData);
 					setFilteredFundees(fundeeData);
 					setIsLoading(false);
-					
+
 					// Then calculate real scores
 					calculateScores(fundeeData);
 				} else {
@@ -126,26 +141,26 @@ export default function FundeesPage() {
 	// Calculate scores from Flask API
 	const calculateScores = async (fundees: FundeeData[]) => {
 		setIsCalculatingScores(true);
-		
+
 		try {
 			// Process in batches to avoid overwhelming the API
 			const BATCH_SIZE = 3; // Process 3 at a time
 			const updatedFundees = [...fundees];
-			
+
 			// Default funder ID
 			const funderId = 1;
-			
+
 			for (let i = 0; i < fundees.length; i += BATCH_SIZE) {
 				const batchFundees = fundees.slice(i, i + BATCH_SIZE);
-				
+
 				// Calculate scores for each fundee in the batch
-				const scorePromises = batchFundees.map(fundee => 
+				const scorePromises = batchFundees.map((fundee) =>
 					api.flask.calculateTopScores(fundee.id, funderId)
 				);
-				
+
 				// Wait for all calculations to complete
 				const scoreResults = await Promise.all(scorePromises);
-				
+
 				// Update fundees with calculated scores
 				scoreResults.forEach((result, index) => {
 					if (result.success) {
@@ -153,21 +168,22 @@ export default function FundeesPage() {
 						if (fundeeIndex < updatedFundees.length) {
 							updatedFundees[fundeeIndex] = {
 								...updatedFundees[fundeeIndex],
-								efficiency_score: result.scores.efficiency_score,
+								efficiency_score:
+									result.scores.efficiency_score,
 								impact_score: result.scores.impact_score,
-								match: result.scores.match_score
+								match: result.scores.match_score,
 							};
 						}
 					}
 				});
 			}
-			
+
 			// Update state with calculated scores
 			setAllFundees(updatedFundees);
-			
+
 			// Update filtered list
 			const filtered = filterFundees(
-				searchFundees(updatedFundees, searchQuery), 
+				searchFundees(updatedFundees, searchQuery),
 				filters
 			);
 			setFilteredFundees(filtered);
@@ -257,7 +273,9 @@ export default function FundeesPage() {
 
 										<FundeeList
 											fundees={filteredFundees}
-											isLoading={isLoading || isCalculatingScores}
+											isLoading={
+												isLoading || isCalculatingScores
+											}
 											searchQuery={searchQuery}
 										/>
 									</div>
