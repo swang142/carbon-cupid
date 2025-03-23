@@ -237,7 +237,7 @@ export function FundeeCard({ fundee, priority = false }: FundeeCardProps) {
             <div className="flex flex-col text-xs">
               <strong>Project Location Map:</strong>
               <img
-                src={`https://maps.googleapis.com/maps/api/staticmap?center=${fundee.latitude},${fundee.longitude}&zoom=12&size=500x300&maptype=roadmap&markers=color:red%7C${fundee.latitude},${fundee.longitude}&key=${googleMapsApiKey}`}
+                src={`https://maps.googleapis.com/maps/api/staticmap?center=${fundee.latitude},${fundee.longitude}&zoom=7&size=500x300&maptype=roadmap&markers=color:red%7C${fundee.latitude},${fundee.longitude}&key=${googleMapsApiKey}`}
                 alt="Project Location"
                 className="mt-2 rounded-lg shadow"
               />
