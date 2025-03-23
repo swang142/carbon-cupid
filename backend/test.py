@@ -58,7 +58,7 @@ def test_endpoint(name, url, method="GET", data=None, expected_status=200):
 test_data = {
     "risk-score": {
         "trial_data": {
-            "Status": "Operating",
+            "Status": "Completed",
             "Organization Type": "Start-up",
             "Primary CDR Method": "Direct Ocean Capture",
             "Duration of Pilot": "Months",
