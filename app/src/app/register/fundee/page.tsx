@@ -220,6 +220,75 @@ const RegisterFundeePage = () => {
 				result.data?.id || "ID not returned"
 			);
 
+			// Call the score calculation API
+			if (result.data?.id) {
+				try {
+					// Calculate scores with a timeout
+					const controller = new AbortController();
+					const timeoutId = setTimeout(
+						() => controller.abort(),
+						5000
+					); // 5 second timeout
+
+					try {
+						const scoreResponse = await fetch(
+							`${
+								process.env.NEXT_PUBLIC_API_URL ||
+								"http://localhost:8080/api"
+							}/calc-base-scores/${result.data.id}`,
+							{ signal: controller.signal }
+						);
+
+						clearTimeout(timeoutId);
+
+						if (scoreResponse.ok) {
+							const scoreData = await scoreResponse.json();
+
+							// Update fundee with scores
+							const scoreUpdateData = {
+								risk_score: scoreData[0],
+								efficiency_score: scoreData[1],
+								impact_score: scoreData[2],
+							};
+
+							// Update the fundee record with the scores
+							await api.fundees.update(
+								result.data.id,
+								scoreUpdateData
+							);
+
+							console.log(
+								"Updated fundee with scores:",
+								scoreUpdateData
+							);
+						} else {
+							console.error(
+								"Failed to calculate scores:",
+								await scoreResponse.text()
+							);
+						}
+					} catch (fetchError: unknown) {
+						clearTimeout(timeoutId);
+						if (
+							fetchError instanceof Error &&
+							fetchError.name === "AbortError"
+						) {
+							console.warn(
+								"Score calculation timed out after 5 seconds"
+							);
+						} else {
+							throw fetchError;
+						}
+					}
+				} catch (error) {
+					console.error(
+						"Error calculating or updating scores:",
+						error
+					);
+					// Don't show error to user, the profile was still created successfully
+				}
+			}
+
 			setIsSuccess(true);
 
 			toast({
