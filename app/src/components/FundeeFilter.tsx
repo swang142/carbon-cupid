@@ -36,7 +36,7 @@ const filterCategories = [
   {
     id: "team",
     name: "Team Size",
-    options: ["1-10", "11-50", "51-200", ">200"],
+    options: ["1-10", "11-50", "51-200", "200-500", ">500"],
   },
   {
     id: "total_credits_issued",

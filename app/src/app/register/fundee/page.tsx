@@ -49,6 +49,15 @@ const mcdrTypes = [
 	"Biochar",
 	"Other",
 ];
+const projectStatuses = [
+	"Planning",
+	"Unregistered",
+	"In Validation",
+	"In Development",
+	"Registration Requested",
+	"Operational",
+];
+const teamSizes = ["1-10", "11-50", "51-200", "200-500", ">500"];
 
 const RegisterFundeePage = () => {
 	const { toast } = useToast();
@@ -107,6 +116,7 @@ const RegisterFundeePage = () => {
 		if (!formData.mcdrType) missingFields.push("mCDR Type");
 		if (!formData.teamSize) missingFields.push("Team Size");
 		if (!formData.projectName) missingFields.push("Project Name");
+		if (!formData.projectStatus) missingFields.push("Project Status");
 		if (!formData.projectDescription)
 			missingFields.push("Project Description");
 		if (!formData.expectedCredits)
@@ -463,6 +473,54 @@ const RegisterFundeePage = () => {
 
 											<div className="space-y-2">
 												<label
+													htmlFor="projectStatus"
+													className="text-sm font-semibold text-foreground/80"
+												>
+													Project Status*
+												</label>
+												<Select
+													value={
+														formData.projectStatus
+													}
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"projectStatus",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="projectStatus"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select project status" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{projectStatuses.map(
+															(status) => (
+																<SelectItem
+																	key={status}
+																	value={
+																		status
+																	}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{status}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
+												<p className="text-xs text-muted-foreground mt-1">
+													Current development stage of
+													your project
+												</p>
+											</div>
+
+											<div className="space-y-2">
+												<label
 													htmlFor="mcdrType"
 													className="text-sm font-semibold text-foreground/80"
 												>
@@ -523,7 +581,8 @@ const RegisterFundeePage = () => {
 													htmlFor="carbonCredits"
 													className="text-sm font-semibold text-foreground/80"
 												>
-													Carbon Credits Issued
+													Carbon Credits Issued (To
+													Date)
 												</label>
 												<Input
 													id="carbonCredits"
@@ -713,15 +772,37 @@ const RegisterFundeePage = () => {
 												>
 													Team Size*
 												</label>
-												<Input
-													id="teamSize"
-													name="teamSize"
-													type="number"
+												<Select
 													value={formData.teamSize}
-													onChange={handleInputChange}
-													placeholder="e.g. 10"
-													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
-												/>
+													onValueChange={(
+														value: string
+													) =>
+														handleSelectChange(
+															"teamSize",
+															value
+														)
+													}
+												>
+													<SelectTrigger
+														id="teamSize"
+														className="w-full border border-input focus:ring-2 focus:ring-primary/50"
+													>
+														<SelectValue placeholder="Select team size" />
+													</SelectTrigger>
+													<SelectContent className="bg-popover border rounded-md shadow-md">
+														{teamSizes.map(
+															(size) => (
+																<SelectItem
+																	key={size}
+																	value={size}
+																	className="cursor-pointer hover:bg-accent"
+																>
+																	{size}
+																</SelectItem>
+															)
+														)}
+													</SelectContent>
+												</Select>
 											</div>
 
 											<div className="space-y-2">
