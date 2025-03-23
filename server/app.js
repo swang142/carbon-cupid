@@ -11,6 +11,7 @@ import axios from "axios";
 const app = express();
 
 app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 
@@ -47,16 +48,6 @@ app.get("/api/calc-base-scores/:id", async (req, res) => {
             fundee_description: fundee.dataValues.company_description,
             fundee_location: [fundee.dataValues.longitude, fundee.dataValues.latitude],
             fundee_needs: fundee.dataValues.current_funding,
-            "trial_data": {
-                "Status": "Operating",
-                "Organization Type": "Start-up",
-                "Primary CDR Method": "Direct Ocean Capture",
-                "Duration of Pilot": "Months",
-                "MRV Provider": "Carbon Plan",
-                "MRV Strategy": "Direct measurement",
-                "Sequestration per year (tons CO2/year)": 500,
-                "Partners or Collaborator": "University of California, NREL"
-            },
         }
         const risk_score_data = await axios.post("http://127.0.0.1:5000/api/risk-score", fundee_reformatted)
         const efficiency_score_data = await axios.post("http://127.0.0.1:5000/api/efficiency-score", fundee_reformatted)
@@ -85,6 +76,5 @@ sequelize.authenticate()
     .catch((err) => {
         console.error("Database connection/sync error:", err);
     });
-
 
 export default app;

@@ -5,22 +5,39 @@ import math
 import pandas as pd
 from flask_cors import CORS
 import time
-import os
-import google.generativeai as genai
 from dotenv import load_dotenv
+import os
 
-# Load the .env file (change 'secret.env' to your custom filename)
+# Update your imports
+from google import genai  # This is the correct import
+
+
+# Load environment variables first
 load_dotenv(dotenv_path='secret.env')
+
+
+# Get the API key
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print(f"API Key loaded: {'Yes' if GEMINI_API_KEY else 'No'}")
+
+# Import Gemini and initialize client (only once)
+from google import genai
+client = genai.Client(api_key=GEMINI_API_KEY)
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for Express.js frontend integration
 
 # Set your Gemini API key
 # IMPORTANT: For production, use environment variables instead of hardcoding
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_API_KEY = os.getenv(GEMINI_API_KEY)
 
-# Configure the Gemini API with your key
-genai.configure(api_key=GEMINI_API_KEY)
+# # Configure the Gemini API with your key
+# genai.configure(api_key=GEMINI_API_KEY)
+
+# Initialize the Gemini client
+client = genai.Client(api_key="GEMINI_API_KEY")  # Replace with your actual API key
+
 
 # Initialize the embedding model
 def initialize_gemini():
@@ -33,123 +50,34 @@ def initialize_gemini():
         print(f"Error initializing Gemini API: {str(e)}")
         return False
 
-# 1) Risk Score Calculation based on MCDR Trials data
-def calculate_risk_score(trial_data):
-    print("\n===== RISK SCORE CALCULATION =====")
-    print(f"Input trial data: {trial_data}")
-    
-    # Start with baseline risk
+
+def calculate_risk_score_efficiency(efficiency_score):
+    print("\n===== RISK SCORE BASED ON EFFICIENCY =====")
+    # Start with baseline risk score
     risk_score = 50
     print(f"Starting with baseline risk score: {risk_score}")
     
-    # Status factor (more established = less risky)
-    status_risk = {
-        'Operating': -15,
-        'Completed': -20,
-        'In Progress': -10,
-        'Planned': 10,
-        'Proposed': 15
-    }
-    status = trial_data.get('Status', '')
-    status_adjustment = status_risk.get(status, 0)
-    risk_score += status_adjustment
-    print(f"Status: '{status}' → Adjustment: {status_adjustment} → New score: {risk_score}")
+    total_credits = efficiency_score.get('total_credits', 0)
+    expected_credits = efficiency_score.get('expected_credits', 0)
+    amount_invested = efficiency_score.get('amount_invested', 0)
     
-    # Organization type factor
-    org_risk = {
-        'Start-up': 10,
-        'Academic': 0,
-        'Government': -5,
-        'Established Company': -10,
-        'Non-profit': 5
-    }
-    org_type = trial_data.get('Organization Type', '')
-    org_adjustment = org_risk.get(org_type, 5)
-    risk_score += org_adjustment
-    print(f"Organization Type: '{org_type}' → Adjustment: {org_adjustment} → New score: {risk_score}")
+    if expected_credits > 0:
+        efficiency_ratio = total_credits / expected_credits
+        efficiency_risk_adjustment = -min(20, efficiency_ratio * 20)  # Scale the efficiency adjustment
+    else:
+        efficiency_risk_adjustment = 0
     
-    # CDR Method factor (some methods might be more proven than others)
-    cdr_risk = {
-        'Direct Air Capture': 0,
-        'Enhanced Weathering': 5,
-        'Afforestation': -10,
-        'Ocean Alkalinity Enhancement': 10,
-        'Biomass Carbon Removal and Storage': 0,
-        'Direct Ocean Capture': 10
-    }
-    cdr_method = trial_data.get('Primary CDR Method', '')
-    cdr_adjustment = cdr_risk.get(cdr_method, 5)
-    risk_score += cdr_adjustment
-    print(f"CDR Method: '{cdr_method}' → Adjustment: {cdr_adjustment} → New score: {risk_score}")
-    
-    # Duration factor (longer duration = more data = less risk)
-    duration = trial_data.get('Duration of Pilot', '')
-    duration_adjustment = 0
-    if 'Years' in str(duration):
-        duration_adjustment = -10
-    elif 'Months' in str(duration):
-        duration_adjustment = -5
-    risk_score += duration_adjustment
-    print(f"Duration: '{duration}' → Adjustment: {duration_adjustment} → New score: {risk_score}")
-    
-    # MRV factor (better measurement = less risk)
-    mrv_provider = trial_data.get('MRV Provider')
-    mrv_strategy = trial_data.get('MRV Strategy')
-    mrv_adjustment = 0
-    if mrv_provider and mrv_strategy:
-        mrv_adjustment = -15
-    risk_score += mrv_adjustment
-    print(f"MRV: Provider: '{mrv_provider}', Strategy: '{mrv_strategy}' → Adjustment: {mrv_adjustment} → New score: {risk_score}")
-    
-    # Sequestration scale factor
-    seq_adjustment = 0
-    try:
-        seq_value = float(trial_data.get('Sequestration per year (tons CO2/year)', 0))
-        print(f"Sequestration value: {seq_value} tons CO2/year")
-        if seq_value > 10000:
-            seq_adjustment = -15
-            print(f"  > 10,000 tons → Adjustment: {seq_adjustment}")
-        elif seq_value > 1000:
-            seq_adjustment = -10
-            print(f"  > 1,000 tons → Adjustment: {seq_adjustment}")
-        elif seq_value > 100:
-            seq_adjustment = -5
-            print(f"  > 100 tons → Adjustment: {seq_adjustment}")
-        else:
-            seq_adjustment = 5
-            print(f"  ≤ 100 tons → Adjustment: {seq_adjustment}")
-    except (ValueError, TypeError):
-        seq_adjustment = 5
-        print(f"  Invalid or missing sequestration data → Adjustment: {seq_adjustment}")
-    
-    risk_score += seq_adjustment
-    print(f"After sequestration adjustment → New score: {risk_score}")
-    
-    # Partners factor (more partners = more oversight = less risk)
-    partners_adjustment = 0
-    if trial_data.get('Partners or Collaborator'):
-        partners = str(trial_data.get('Partners or Collaborator')).split(',')
-        print(f"Partners count: {len(partners)}")
-        if len(partners) > 3:
-            partners_adjustment = -10
-            print(f"  > 3 partners → Adjustment: {partners_adjustment}")
-        elif len(partners) > 1:
-            partners_adjustment = -5
-            print(f"  > 1 partner → Adjustment: {partners_adjustment}")
-    
-    risk_score += partners_adjustment
-    print(f"After partners adjustment → New score: {risk_score}")
+    print(f"Efficiency ratio: {efficiency_ratio} → Adjustment: {efficiency_risk_adjustment}")
+    risk_score += efficiency_risk_adjustment
     
     # Normalize to 0-100 range
-    original_score = risk_score
     risk_score = max(0, min(100, risk_score))
-    if original_score != risk_score:
-        print(f"Normalizing score from {original_score} to {risk_score} (0-100 range)")
     
-    print(f"FINAL RISK SCORE: {risk_score}")
+    print(f"FINAL RISK SCORE BASED ON EFFICIENCY: {risk_score}")
     print("===================================\n")
     
     return risk_score
+
 
 # 2) Efficiency Score Calculation
 def calculate_efficiency_score(total_credits, expected_credits, amount_invested):
@@ -232,31 +160,40 @@ def calculate_impact_score(total_credits):
     
     return impact_score
 
-# 4) Goal Alignment Score (Cosine Similarity)
+# Update the get_embedding function to use the latest API
 def get_embedding(text):
-    """Generate embeddings using Google's Gemini model"""
+    """Generate embeddings using Google's Gemini embedding model"""
     print(f"Generating embedding for text: '{text[:50]}...' (truncated)")
     start_time = time.time()
-    
+
     try:
-        # Using Gemini's embedding model
-        embedding_model = genai.get_model("models/embedding-001")
-        result = embedding_model.embed_content(
-            task_type="retrieval_document",
-            content=text
+        # Use the current recommended Gemini embedding model
+        result = client.models.embed_content(
+            model="gemini-embedding-exp-03-07",  # Latest experimental embedding model
+            contents=text
         )
-        
-        embedding = np.array(result["embedding"])
+
+        # Access the embeddings from the result
+        embedding = np.array(result.embeddings)
         elapsed = time.time() - start_time
         print(f"Embedding generated successfully (time: {elapsed:.2f}s, dimensions: {embedding.shape})")
         
-        # Return the embedding values
         return embedding
     except Exception as e:
         print(f"Error generating embedding: {str(e)}")
-        print("Returning zero vector as fallback")
-        # Return a zero vector as fallback
-        return np.zeros(768)  # Typical embedding dimension
+        print("Returning fallback embedding")
+        
+        # Create deterministic fallback embedding
+        import hashlib
+        hash_obj = hashlib.md5(text.encode())
+        seed = int(hash_obj.hexdigest(), 16) % (2**32)
+        np.random.seed(seed)
+        
+        # Create normalized random vector
+        embedding = np.random.randn(768)
+        embedding = embedding / np.linalg.norm(embedding)
+        
+        return embedding
 
 def calculate_goal_alignment(funder_description, fundee_description):
     """Calculate alignment between funder and fundee based on their descriptions"""
