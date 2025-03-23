@@ -91,7 +91,17 @@ const RegisterFundeePage = () => {
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
+
+		// For numeric fields, ensure value is not negative
+		if (
+			["carbonCredits", "expectedCredits", "fundingNeeded"].includes(name)
+		) {
+			// Convert to number and ensure it's non-negative
+			const numValue = Math.max(0, Number(value));
+			setFormData((prev) => ({ ...prev, [name]: numValue.toString() }));
+		} else {
+			setFormData((prev) => ({ ...prev, [name]: value }));
+		}
 	};
 
 	const handleSelectChange = (name: string, value: string) => {
@@ -122,6 +132,15 @@ const RegisterFundeePage = () => {
 		if (!formData.expectedCredits)
 			missingFields.push("Expected Credits (Next 5 Years)");
 
+		// Validate numeric fields are non-negative
+		const numericErrors = [];
+		if (parseInt(formData.fundingNeeded) < 0)
+			numericErrors.push("Funding Needed cannot be negative");
+		if (parseInt(formData.carbonCredits) < 0)
+			numericErrors.push("Carbon Credits Issued cannot be negative");
+		if (parseInt(formData.expectedCredits) < 0)
+			numericErrors.push("Expected Credits cannot be negative");
+
 		if (missingFields.length > 0) {
 			console.log(
 				`Validation failed: Missing fields: ${missingFields.join(", ")}`
@@ -132,6 +151,22 @@ const RegisterFundeePage = () => {
 				description: `Please fill in all required fields: ${missingFields.join(
 					", "
 				)}`,
+				variant: "destructive",
+				duration: 5000,
+				className:
+					"border-red-500 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-50",
+			});
+			return;
+		}
+
+		if (numericErrors.length > 0) {
+			console.log(
+				`Validation failed: Invalid values: ${numericErrors.join(", ")}`
+			);
+
+			toast({
+				title: "Invalid Values",
+				description: numericErrors.join(", "),
 				variant: "destructive",
 				duration: 5000,
 				className:
@@ -220,6 +255,7 @@ const RegisterFundeePage = () => {
 				result.data?.id || "ID not returned"
 			);
 
+			// Show success message immediately after creating the profile
 			setIsSuccess(true);
 
 			toast({
@@ -240,6 +276,165 @@ const RegisterFundeePage = () => {
 			setTimeout(() => {
 				setIsSuccess(false);
 			}, 3000);
+
+			// Call the score calculation API in the background (non-blocking)
+			if (result.data?.id) {
+				// Use a separate async function to handle the score calculation
+				const calculateScores = async () => {
+					try {
+						console.log("Calculating scores in the background...");
+
+						// Create an abort controller with a 15-second timeout
+						const controller = new AbortController();
+						const timeoutId = setTimeout(
+							() => controller.abort(),
+							15000
+						);
+
+						try {
+							const scoreResponse = await fetch(
+								`${
+									process.env.NEXT_PUBLIC_API_URL ||
+									"http://localhost:8080/api"
+								}/calc-base-scores/${result.data.id}`,
+								{
+									method: "GET",
+									signal: controller.signal,
+								}
+							);
+
+							// Clear the timeout as soon as the request completes
+							clearTimeout(timeoutId);
+
+							if (scoreResponse.ok) {
+								const scoreData = await scoreResponse.json();
+								console.log(
+									"Raw score data received:",
+									scoreData
+								);
+
+								// Update fundee with scores - use default values if data is invalid
+								const scoreUpdateData = {
+									risk_score:
+										scoreData[0] &&
+										typeof scoreData[0].risk_score ===
+											"number"
+											? scoreData[0].risk_score
+											: 0, // Default to 0 if invalid
+									efficiency_score:
+										scoreData[1] &&
+										typeof scoreData[1].efficiency_score ===
+											"number"
+											? scoreData[1].efficiency_score
+											: 0,
+									impact_score:
+										scoreData[2] &&
+										typeof scoreData[2].impact_score ===
+											"number"
+											? scoreData[2].impact_score
+											: 0,
+								};
+
+								console.log(
+									"Formatted score data to save:",
+									scoreUpdateData
+								);
+
+								// Update the fundee record with the scores
+								await api.fundees.update(
+									result.data.id,
+									scoreUpdateData
+								);
+
+								console.log(
+									"Updated fundee with scores:",
+									scoreUpdateData
+								);
+							} else {
+								console.error(
+									"Failed to calculate scores:",
+									await scoreResponse.text()
+								);
+
+								// Set default scores if calculation fails
+								const defaultScores = {
+									risk_score: 0,
+									efficiency_score: 0,
+									impact_score: 0,
+								};
+
+								console.log(
+									"Using default scores:",
+									defaultScores
+								);
+
+								// Still update with default scores
+								await api.fundees.update(
+									result.data.id,
+									defaultScores
+								);
+							}
+						} catch (fetchError) {
+							clearTimeout(timeoutId);
+							if (
+								fetchError instanceof Error &&
+								fetchError.name === "AbortError"
+							) {
+								console.warn(
+									"Score calculation timed out after 15 seconds"
+								);
+
+								// Set default scores if calculation times out
+								const defaultScores = {
+									risk_score: 0,
+									efficiency_score: 0,
+									impact_score: 0,
+								};
+
+								console.log(
+									"Using default scores due to timeout:",
+									defaultScores
+								);
+
+								// Update with default scores
+								await api.fundees.update(
+									result.data.id,
+									defaultScores
+								);
+							} else {
+								console.error("Fetch error:", fetchError);
+
+								// Set default scores if there's any fetch error
+								const defaultScores = {
+									risk_score: 0,
+									efficiency_score: 0,
+									impact_score: 0,
+								};
+
+								console.log(
+									"Using default scores due to error:",
+									defaultScores
+								);
+
+								// Update with default scores
+								await api.fundees.update(
+									result.data.id,
+									defaultScores
+								);
+							}
+						}
+					} catch (error) {
+						console.error(
+							"Error calculating or updating scores:",
+							error
+						);
+						// Don't show error to user, the profile was still created successfully
+					}
+				};
+
+				// Start score calculation in the background without awaiting the result
+				calculateScores();
+			}
 		} catch (error) {
 			console.error("Registration error:", error);
 			toast({
@@ -613,6 +808,7 @@ const RegisterFundeePage = () => {
 													id="carbonCredits"
 													name="carbonCredits"
 													type="number"
+													min="0"
 													value={
 														formData.carbonCredits
 													}
@@ -634,6 +830,7 @@ const RegisterFundeePage = () => {
 													id="expectedCredits"
 													name="expectedCredits"
 													type="number"
+													min="0"
 													value={
 														formData.expectedCredits
 													}
@@ -692,6 +889,7 @@ const RegisterFundeePage = () => {
 													id="fundingNeeded"
 													name="fundingNeeded"
 													type="number"
+													min="0"
 													value={
 														formData.fundingNeeded
 													}

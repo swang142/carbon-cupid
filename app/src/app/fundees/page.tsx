@@ -1,5 +1,6 @@
+// src/app/fundees/page.tsx
 "use client";
-import { useState, useCallback, useEffect, use } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { FundeeFilter } from "@/components/FundeeFilter";
 import { FundeeList } from "@/components/FundeeList";
@@ -10,13 +11,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
-// Helper functions to replace mockFundees functions
+
 function searchFundees(fundees: FundeeData[], query: string): FundeeData[] {
 	if (!query.trim()) return fundees;
 
 	const lowercaseQuery = query.toLowerCase();
 	return fundees.filter((fundee) => {
-		// Search through various fields
+
 		return (
 			fundee.company_name.toLowerCase().includes(lowercaseQuery) ||
 			fundee.mcdr_type.toLowerCase().includes(lowercaseQuery) ||
@@ -36,13 +37,12 @@ function filterFundees(
 	fundees: FundeeData[],
 	filters: Record<string, string[]>
 ): FundeeData[] {
-	// If no filters are applied, return all fundees
 	if (Object.keys(filters).length === 0) return fundees;
 
 	return fundees.filter((fundee) => {
 		// Check each filter category
 		for (const [key, values] of Object.entries(filters)) {
-			if (values.length === 0) continue; // Skip if no values selected for this filter
+			if (values.length === 0) continue; 
 
 			switch (key) {
 				case "stage":
@@ -80,19 +80,20 @@ export default function FundeesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filters, setFilters] = useState<Record<string, string[]>>({});
 	const [isLoading, setIsLoading] = useState(true);
+	const [isCalculatingScores, setIsCalculatingScores] = useState(false);
 	const [allFundees, setAllFundees] = useState<FundeeData[]>([]);
 	const [filteredFundees, setFilteredFundees] = useState<FundeeData[]>([]);
+	const isMobile = useIsMobile();
 
-	// Initial data load
 	useEffect(() => {
 		async function fetchFundees() {
 			setIsLoading(true);
 			try {
 				const response = await api.fundees.getAll();
 				if (response.success) {
+					// First set fundees with default scores
 					const fundeeData = response.data.map((fundee: any) => ({
 						...fundee,
-						// Add missing fields needed by FundeeCard with default values
 						logo: null,
 						risk_score: Math.floor(Math.random() * 100),
 						efficiency_score: Math.floor(Math.random() * 100),
@@ -100,17 +101,21 @@ export default function FundeesPage() {
 						goal_alignment_score: null,
 						location_score: null,
 						funding_score: null,
-						match: Math.floor(Math.random() * 100), // Random match percentage for now
+						match: Math.floor(Math.random() * 100),
 					}));
 
 					setAllFundees(fundeeData);
 					setFilteredFundees(fundeeData);
+					setIsLoading(false);
+					
+					// Then calculate real scores
+					calculateScores(fundeeData);
 				} else {
 					console.error("Failed to fetch fundees:", response);
+					setIsLoading(false);
 				}
 			} catch (error) {
 				console.error("Error fetching fundees:", error);
-			} finally {
 				setIsLoading(false);
 			}
 		}
@@ -118,34 +123,88 @@ export default function FundeesPage() {
 		fetchFundees();
 	}, []);
 
+	// Calculate scores from Flask API
+	const calculateScores = async (fundees: FundeeData[]) => {
+		setIsCalculatingScores(true);
+		
+		try {
+			// Process in batches to avoid overwhelming the API
+			const BATCH_SIZE = 3; // Process 3 at a time
+			const updatedFundees = [...fundees];
+			
+			// Default funder ID
+			const funderId = 1;
+			
+			for (let i = 0; i < fundees.length; i += BATCH_SIZE) {
+				const batchFundees = fundees.slice(i, i + BATCH_SIZE);
+				
+				// Calculate scores for each fundee in the batch
+				const scorePromises = batchFundees.map(fundee => 
+					api.flask.calculateTopScores(fundee.id, funderId)
+				);
+				
+				// Wait for all calculations to complete
+				const scoreResults = await Promise.all(scorePromises);
+				
+				// Update fundees with calculated scores
+				scoreResults.forEach((result, index) => {
+					if (result.success) {
+						const fundeeIndex = i + index;
+						if (fundeeIndex < updatedFundees.length) {
+							updatedFundees[fundeeIndex] = {
+								...updatedFundees[fundeeIndex],
+								efficiency_score: result.scores.efficiency_score,
+								impact_score: result.scores.impact_score,
+								match: result.scores.match_score
+							};
+						}
+					}
+				});
+			}
+			
+			// Update state with calculated scores
+			setAllFundees(updatedFundees);
+			
+			// Update filtered list
+			const filtered = filterFundees(
+				searchFundees(updatedFundees, searchQuery), 
+				filters
+			);
+			setFilteredFundees(filtered);
+		} catch (error) {
+			console.error("Error calculating scores:", error);
+		} finally {
+			setIsCalculatingScores(false);
+		}
+	};
+
 	// Handle search
 	const handleSearch = useCallback(
 		(query: string) => {
 			setSearchQuery(query);
 			setIsLoading(true);
 
-			// Simulate API request delay
+			// Process the search
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, query);
 				setFilteredFundees(filterFundees(searchResults, filters));
 				setIsLoading(false);
-			}, 800);
+			}, 300);
 		},
 		[filters, allFundees]
 	);
 
-	// Handle filter changes
 	const handleFiltersChange = useCallback(
 		(newFilters: Record<string, string[]>) => {
 			setFilters(newFilters);
 			setIsLoading(true);
 
-			// Simulate API request delay
+			// Process the filters
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, searchQuery);
 				setFilteredFundees(filterFundees(searchResults, newFilters));
 				setIsLoading(false);
-			}, 600);
+			}, 300);
 		},
 		[searchQuery, allFundees]
 	);
@@ -190,13 +249,15 @@ export default function FundeesPage() {
 											<p className="text-sm text-muted-foreground animate-fade-in">
 												{isLoading
 													? "Finding the best matches for you..."
+													: isCalculatingScores
+													? "Calculating match scores..."
 													: `Showing ${filteredFundees.length} fundees`}
 											</p>
 										</div>
 
 										<FundeeList
 											fundees={filteredFundees}
-											isLoading={isLoading}
+											isLoading={isLoading || isCalculatingScores}
 											searchQuery={searchQuery}
 										/>
 									</div>

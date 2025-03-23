@@ -190,5 +190,131 @@ export const api = {
 
 			return response.json();
 		},
+
+		/**
+		 * Update an existing fundee
+		 * @param id - ID of the fundee to update
+		 * @param fundeeData - Updated fundee data
+		 * @returns Promise with the updated fundee data
+		 */
+		update: async (id: string | number, fundeeData: any) => {
+			try {
+				const response = await fetch(`${API_BASE_URL}/fundees/${id}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(fundeeData),
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(
+						errorData.error || "Failed to update fundee"
+					);
+				}
+
+				return response.json();
+			} catch (error) {
+				console.error("Error updating fundee:", error);
+				throw error;
+			}
+		},
 	},
+
+	/**
+   * Flask API methods for advanced calculations
+   */
+	flask: {
+		/**
+		 * Calculate top three scores (match, efficiency, impact) for a fundee
+		 * @param fundeeId - ID of the fundee
+		 * @param funderId - ID of the funder (defaults to 1)
+		 */
+		calculateTopScores: async (fundeeId: string | number, funderId: string | number = 1) => {
+		  try {
+			const response = await fetch(`${API_BASE_URL}/flask/calculate-match`, {
+			  method: 'POST',
+			  headers: {
+				'Content-Type': 'application/json',
+			  },
+			  body: JSON.stringify({
+				fundee_id: fundeeId,
+				funder_id: funderId
+			  }),
+			});
+	
+			if (!response.ok) {
+			  const errorData = await response.json();
+			  throw new Error(errorData.error || 'Failed to calculate scores');
+			}
+	
+			const data = await response.json();
+			
+			if (data.success) {
+			  // Extract the three most important scores
+			  return {
+				success: true,
+				scores: {
+				  match_score: data.match_score || 0,
+				  efficiency_score: data.components?.efficiency_score || 0,
+				  impact_score: data.components?.impact_score || 0
+				}
+			  };
+			} else {
+			  throw new Error(data.error || 'Failed to calculate scores');
+			}
+		  } catch (error) {
+			console.error('Error calculating scores:', error);
+			return {
+			  success: false,
+			  scores: {
+				match_score: 0,
+				efficiency_score: 0,
+				impact_score: 0
+			  }
+			};
+		  }
+		},
+	
+		/**
+		 * Calculate all scores for a fundee (full match analysis)
+		 * @param fundeeId - ID of the fundee
+		 * @param funderId - ID of the funder (defaults to 1)
+		 */
+		calculateFullScores: async (fundeeId: string | number, funderId: string | number = 1) => {
+		  try {
+			const response = await fetch(`${API_BASE_URL}/flask/calculate-match`, {
+			  method: 'POST',
+			  headers: {
+				'Content-Type': 'application/json',
+			  },
+			  body: JSON.stringify({
+				fundee_id: fundeeId,
+				funder_id: funderId
+			  }),
+			});
+	
+			if (!response.ok) {
+			  const errorData = await response.json();
+			  throw new Error(errorData.error || 'Failed to calculate scores');
+			}
+	
+			return response.json();
+		  } catch (error) {
+			console.error('Error calculating full scores:', error);
+			return {
+			  success: false,
+			  match_score: 0,
+			  components: {
+				efficiency_score: 0,
+				impact_score: 0,
+				goal_alignment_score: 0,
+				location_match_score: 0,
+				funding_capability_match_score: 0
+			  }
+			};
+		  }
+		}
+	}
 };

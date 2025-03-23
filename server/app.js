@@ -1,3 +1,4 @@
+// server/app.js
 import express from "express";
 import cors from "cors";
 import { sequelize } from "./config/database.js";
@@ -12,13 +13,13 @@ import axios from "axios";
 const app = express();
 
 app.use(cors());
-app.use(cors());
 app.use(express.json());
 
-
+// API routes
 app.use("/api/fundees", fundeeRoutes);
 app.use("/api/funders", funderRoutes);
 app.use("/api/mcdrs", mcdrRoutes);
+app.use("/api/flask", flaskApiRoutes); // Add Flask API routes
 
 // Basic connection test
 app.get("/api/health", async (req, res) => {
@@ -35,6 +36,18 @@ app.get("/api/health", async (req, res) => {
 	}
 });
 
+sequelize
+	.authenticate()
+	.then(() => {
+		console.log("Connection established successfully");
+		return sequelize.sync({ alter: true }); // This will create/update tables
+	})
+	.then(() => {
+		console.log("Database synchronized successfully");
+	})
+	.catch((err) => {
+		console.error("Database connection/sync error:", err);
+	});
 
 
 // call kenny apis
