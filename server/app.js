@@ -52,6 +52,13 @@ app.get("/api/calc-base-scores/:id", async (req, res) => {
         const risk_score_data = await axios.post("http://127.0.0.1:5000/api/risk-score", fundee_reformatted)
         const efficiency_score_data = await axios.post("http://127.0.0.1:5000/api/efficiency-score", fundee_reformatted)
         const impact_score = await axios.post("http://127.0.0.1:5000/api/impact-score", fundee_reformatted)
+
+        await fundee.update({   
+            risk_score: risk_score_data.data.risk_score,
+            efficiency_score: efficiency_score_data.data.efficiency_score,
+            impact_score: impact_score.data.impact_score
+        })
+
         res.status(200).send([risk_score_data.data, efficiency_score_data.data, impact_score.data])
     } catch (error) {
         console.log(error)
