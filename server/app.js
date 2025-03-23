@@ -13,10 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-<<<<<<< HEAD
-=======
 // API routes
->>>>>>> 2f0340f (update to merge conflict)
 app.use("/api/fundees", fundeeRoutes);
 app.use("/api/funders", funderRoutes);
 app.use("/api/mcdrs", mcdrRoutes);
