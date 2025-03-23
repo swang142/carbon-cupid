@@ -46,7 +46,7 @@ export default function HomePage() {
       <section className="py-16 md:py-24 bg-secondary/30 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose FundeeConnect?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose CarbonCupid?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our platform offers unique advantages for connecting funders with the right opportunities.
             </p>
@@ -109,7 +109,7 @@ export default function HomePage() {
             </div>
             
             <div className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} FundeeConnect. All rights reserved.
+              © {new Date().getFullYear()} CarbonCupid. All rights reserved.
             </div>
             
             <div className="flex gap-6">

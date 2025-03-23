@@ -20,7 +20,7 @@ const JoinPage = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-12 mt-16">
         <div className="w-full max-w-4xl mx-auto">
           <div className="text-center mb-10 animate-fade-in">
-            <h1 className="text-3xl font-bold tracking-tight mb-3">Join FundeeConnect</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-3">Join CarbonCupid</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Choose whether you represent a growing organization looking for funding or an investor looking to fund promising sustainability projects.
             </p>

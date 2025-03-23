@@ -39,8 +39,8 @@ const Navbar = () => {
                 href="/" 
                 className="text-xl font-semibold tracking-tight transition-colors animate-fade-in"
             >
-                <span className="text-primary">cupid</span>
-                <span>connect</span>
+                <span className="text-primary">carbon</span>
+                <span>cupid</span>
             </Link>
             
             <NavRight pathname={pathname} isLoggedIn={isLoggedIn} />
