@@ -28,17 +28,23 @@ const navigationItems =  [
     }
     
 ]
-const Navbar = ({children}: {children: React.ReactNode}) => {
+const Navbar = () => {
     const pathname = usePathname()
-    const [isLoggedIn, setIsLoggedIn] = useState(true)
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   return (
-    <nav className="flex justify-between items-center p-4 relative">
-        {/* Logo */}
-        <div>
-            Logo
+    <nav className= "fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-gray-200">
+        <div className="container mx-auto flex justify-between items-center p-4 relative">
+            <Link 
+                href="/" 
+                className="text-xl font-semibold tracking-tight transition-colors animate-fade-in"
+            >
+                <span className="text-primary">cupid</span>
+                <span>connect</span>
+            </Link>
+            
+            <NavRight pathname={pathname} isLoggedIn={isLoggedIn} />
         </div>
-        <NavRight pathname={pathname} isLoggedIn={isLoggedIn} />
     </nav>
   )
 }
@@ -48,16 +54,16 @@ const NavRight = ( {pathname, isLoggedIn}: {pathname: string, isLoggedIn: boolea
         <div className="flex items-center gap-6 px-10">
             {navigationItems.map((item) => (
                 <Link href={item.href} key={item.name} 
-                className={cn("text-sm font-medium transition-colors hover:text-blue-600", {'text-blue-500': pathname === item.href })}>
+                className={cn("text-sm font-medium transition-colors hover:text-primary", {'text-primary': pathname === item.href })}>
                     {item.name}
                 </Link>
             ))}
             <div className="flex items-center gap-2 px-2">
                 {!isLoggedIn && (
                     <Button asChild variant="ghost" size="sm" className="gap-2 transition-all duration-300">
-                        <Link href="/login">
+                        <Link href="/join">
                         <LogIn className="h-4 w-4" />
-                        <span>Login</span>
+                        <span>Join</span>
                         </Link>
                     </Button>
                 )}

@@ -9,3 +9,7 @@ export {
   CollapsibleTrigger 
 } from "@/components/ui/collapsible";
 export { ScrollArea } from "@/components/ui/scroll-area";
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+export { Calendar } from "@/components/ui/calendar";
+export { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+export { Input } from "@/components/ui/input";
