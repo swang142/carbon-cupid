@@ -10,13 +10,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
-// Helper functions to replace mockFundees functions
+
 function searchFundees(fundees: FundeeData[], query: string): FundeeData[] {
 	if (!query.trim()) return fundees;
 
 	const lowercaseQuery = query.toLowerCase();
 	return fundees.filter((fundee) => {
-		// Search through various fields
+
 		return (
 			fundee.company_name.toLowerCase().includes(lowercaseQuery) ||
 			fundee.mcdr_type.toLowerCase().includes(lowercaseQuery) ||
@@ -36,13 +36,12 @@ function filterFundees(
 	fundees: FundeeData[],
 	filters: Record<string, string[]>
 ): FundeeData[] {
-	// If no filters are applied, return all fundees
 	if (Object.keys(filters).length === 0) return fundees;
 
 	return fundees.filter((fundee) => {
 		// Check each filter category
 		for (const [key, values] of Object.entries(filters)) {
-			if (values.length === 0) continue; // Skip if no values selected for this filter
+			if (values.length === 0) continue; 
 
 			switch (key) {
 				case "stage":
@@ -83,7 +82,6 @@ export default function FundeesPage() {
 	const [allFundees, setAllFundees] = useState<FundeeData[]>([]);
 	const [filteredFundees, setFilteredFundees] = useState<FundeeData[]>([]);
 
-	// Initial data load
 	useEffect(() => {
 		async function fetchFundees() {
 			setIsLoading(true);
@@ -92,7 +90,6 @@ export default function FundeesPage() {
 				if (response.success) {
 					const fundeeData = response.data.map((fundee: any) => ({
 						...fundee,
-						// Add missing fields needed by FundeeCard with default values
 						logo: null,
 						risk_score: Math.floor(Math.random() * 100),
 						efficiency_score: Math.floor(Math.random() * 100),
@@ -100,7 +97,7 @@ export default function FundeesPage() {
 						goal_alignment_score: null,
 						location_score: null,
 						funding_score: null,
-						match: Math.floor(Math.random() * 100), // Random match percentage for now
+						match: Math.floor(Math.random() * 100),
 					}));
 
 					setAllFundees(fundeeData);
@@ -118,13 +115,11 @@ export default function FundeesPage() {
 		fetchFundees();
 	}, []);
 
-	// Handle search
 	const handleSearch = useCallback(
 		(query: string) => {
 			setSearchQuery(query);
 			setIsLoading(true);
 
-			// Simulate API request delay
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, query);
 				setFilteredFundees(filterFundees(searchResults, filters));
@@ -134,13 +129,11 @@ export default function FundeesPage() {
 		[filters, allFundees]
 	);
 
-	// Handle filter changes
 	const handleFiltersChange = useCallback(
 		(newFilters: Record<string, string[]>) => {
 			setFilters(newFilters);
 			setIsLoading(true);
 
-			// Simulate API request delay
 			setTimeout(() => {
 				const searchResults = searchFundees(allFundees, searchQuery);
 				setFilteredFundees(filterFundees(searchResults, newFilters));
