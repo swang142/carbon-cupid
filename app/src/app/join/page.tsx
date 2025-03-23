@@ -41,7 +41,7 @@ const JoinPage = () => {
 								</p>
 								<Button
 									onClick={() => handleSelection("fundee")}
-									className="w-full mt-auto"
+									className="w-full mt-auto hover:cursor-pointer"
 								>
 									Coming Soon
 								</Button>
@@ -62,7 +62,7 @@ const JoinPage = () => {
 								</p>
 								<Button
 									onClick={() => handleSelection("funder")}
-									className="w-full mt-auto"
+									className="w-full mt-auto hover:cursor-pointer"
 								>
 									Register as Funder
 								</Button>
