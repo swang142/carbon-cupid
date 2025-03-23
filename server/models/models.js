@@ -49,7 +49,7 @@ const Fundee = sequelize.define('Fundee', {
     type: DataTypes.INTEGER
   },
   mcdr_approach: { //provide  
-    type: DataTypes.STRING
+    type: DataTypes.ARRAY(DataTypes.STRING)
   },
   description: {
     type: DataTypes.TEXT
@@ -74,7 +74,7 @@ const mCDR_trials = sequelize.define('MCDR_trials', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    mcdr_methods: { //provide
+    all_cdr_methods: { //provide
         type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: false
     },
@@ -102,4 +102,4 @@ const mCDR_trials = sequelize.define('MCDR_trials', {
 Fundee.hasOne(mCDR_trials);
 mCDR_trials.belongsTo(Fundee);
 
-export { Fundee, MCDR };
+export { Fundee, mCDR_trials };

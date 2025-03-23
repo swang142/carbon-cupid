@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, use } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { FundeeFilter } from "@/components/FundeeFilter";
 import { FundeeList } from "@/components/FundeeList";
@@ -9,13 +9,12 @@ import { Filter } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-
 export default function FundeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [filteredFundees, setFilteredFundees] = useState(mockFundees);
-
+  
   // Handle search
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -28,7 +27,7 @@ export default function FundeesPage() {
       setIsLoading(false);
     }, 800);
   }, [filters]);
-
+  
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: Record<string, string[]>) => {
     setFilters(newFilters);
@@ -41,7 +40,7 @@ export default function FundeesPage() {
       setIsLoading(false);
     }, 600);
   }, [searchQuery]);
-
+  
   // Initial data load
   useEffect(() => {
     // Simulate initial data loading
@@ -50,30 +49,27 @@ export default function FundeesPage() {
       setIsLoading(false);
     }, 1000);
   }, []);
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <main className="flex-1 pt-16">
-        <div className="container px-4 py-8 md:py-12">
+      <main className="flex-1">
+        <div className="container px-4 py-">
           <div className="max-w-screen-2xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              
-              <div className="md:col-span-3 lg:col-span-2">
-                <div className="sticky top-24">
-                  <FundeeFilter 
-                    filters={filters} // Pass current filter state
-                    onFiltersChange={handleFiltersChange} 
-                  />
+                <div className="col-span-2">
+                  <div className="sticky top-20">
+                    <FundeeFilter onFiltersChange={handleFiltersChange} />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="md:col-span-9 lg:col-span-10">
+
+              <div className="col-span-10">
                 <div className="flex flex-col gap-8">
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <h1 className="text-2xl font-semibold sm:text-3xl animate-fade-in">
                         Discover Fundees
                       </h1>
+                      
                     </div>
                     
                     <div className="w-full max-w-3xl">
