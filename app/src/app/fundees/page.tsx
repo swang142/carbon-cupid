@@ -51,13 +51,13 @@ export default function FundeesPage() {
   }, []);
   
   return (
-    <div className="flex flex-col bg-background">
+    <div className="flex flex-col bg-background mt-1.5">
       <main className="flex-1">
         <div className="container px-4 py-">
           <div className="max-w-screen-2xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 <div className="col-span-2">
-                  <div className="sticky top-20">
+                  <div className="sticky top-35">
                     <FundeeFilter onFiltersChange={handleFiltersChange} />
                   </div>
                 </div>
