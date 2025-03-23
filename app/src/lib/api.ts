@@ -190,5 +190,35 @@ export const api = {
 
 			return response.json();
 		},
+
+		/**
+		 * Update an existing fundee
+		 * @param id - ID of the fundee to update
+		 * @param fundeeData - Updated fundee data
+		 * @returns Promise with the updated fundee data
+		 */
+		update: async (id: string | number, fundeeData: any) => {
+			try {
+				const response = await fetch(`${API_BASE_URL}/fundees/${id}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(fundeeData),
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(
+						errorData.error || "Failed to update fundee"
+					);
+				}
+
+				return response.json();
+			} catch (error) {
+				console.error("Error updating fundee:", error);
+				throw error;
+			}
+		},
 	},
 };

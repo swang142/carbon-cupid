@@ -1,4 +1,4 @@
-curl -X POST http://localhost:5000/api/risk-score \
+curl -X POST http://localhost:5001/api/risk-score \
   -H "Content-Type: application/json" \
   -d '{
     "trial_data": {
@@ -15,7 +15,7 @@ curl -X POST http://localhost:5000/api/risk-score \
 
 
 
-  curl -X POST http://localhost:5000/api/efficiency-score \
+  curl -X POST http://localhost:5001/api/efficiency-score \
   -H "Content-Type: application/json" \
   -d '{
     "total_credits": 300,
@@ -24,7 +24,7 @@ curl -X POST http://localhost:5000/api/risk-score \
   }'
 
 
-  curl -X POST http://localhost:5000/api/impact-score \
+  curl -X POST http://localhost:5001/api/impact-score \
   -H "Content-Type: application/json" \
   -d '{
     "total_credits": 1000
@@ -32,7 +32,7 @@ curl -X POST http://localhost:5000/api/risk-score \
 
 
 
-  curl -X POST http://localhost:5000/api/goal-alignment \
+  curl -X POST http://localhost:5001/api/goal-alignment \
   -H "Content-Type: application/json" \
   -d '{
     "funder_description": "We focus on funding innovative direct air capture and ocean-based carbon removal technologies with proven measurement methods and potential for gigaton scale.",
@@ -41,7 +41,7 @@ curl -X POST http://localhost:5000/api/risk-score \
 
 
 
-  curl -X POST http://localhost:5000/api/location-match \
+  curl -X POST http://localhost:5001/api/location-match \
   -H "Content-Type: application/json" \
   -d '{
     "funder_location": [37.7749, -122.4194],
@@ -49,7 +49,7 @@ curl -X POST http://localhost:5000/api/risk-score \
   }'
 
 
-  curl -X POST http://localhost:5000/api/funding-capability-match \
+  curl -X POST http://localhost:5001/api/funding-capability-match \
   -H "Content-Type: application/json" \
   -d '{
     "funder_capability": 750000,
@@ -60,7 +60,7 @@ curl -X POST http://localhost:5000/api/risk-score \
   import requests
 import json
 
-BASE_URL = "http://localhost:5000/api"
+BASE_URL = "http://localhost:5001/api"
 
 # Test data for each endpoint
 test_data = {

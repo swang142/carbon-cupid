@@ -3,7 +3,7 @@ import json
 import time
 import sys
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:5001"
 TIMEOUT = 15  # seconds
 
 def print_separator():
