@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
 import supabase from "./config/database.js";
+import fundeeRoutes from "./routes/fundeeRoutes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/fundees", fundeeRoutes);
 
 // Basic connection test
 app.get("/api/health", async (req, res) => {

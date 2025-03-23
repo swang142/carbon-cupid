@@ -1,7 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { Sequelize } from "sequelize";
+const sequelize = new Sequelize(process.env.DB_URI);
 
-const supabaseUrl = process.env.DB_URL;
-const supabaseKey = process.env.DB_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export default supabase;
+export default sequelize; 
