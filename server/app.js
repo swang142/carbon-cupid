@@ -5,8 +5,15 @@ import { supabase } from "./config/database.js";
 import fundeeRoutes from "./routes/fundeeRoutes.js";
 import funderRoutes from "./routes/funderRoutes.js";
 import mcdrRoutes from "./routes/mcdrRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 import { Fundee } from "./models/models.js";
 import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -14,9 +21,13 @@ app.use(cors());
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 app.use("/api/fundees", fundeeRoutes);
 app.use("/api/funders", funderRoutes);
 app.use("/api/mcdrs", mcdrRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Basic connection test
 app.get("/api/health", async (req, res) => {

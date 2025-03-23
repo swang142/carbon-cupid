@@ -22,6 +22,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { geocodeLocation } from "@/lib/geocode";
+import FileUpload from "@/components/ui/file-upload";
+import { uploadLogo } from "@/lib/uploadLogo";
 
 const stages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+"];
 const revenueRanges = [
@@ -70,7 +72,8 @@ const RegisterFundeePage = () => {
 		stage: "",
 		website: "",
 		industry: "",
-		tagline: "",
+		logoFile: null as File | null,
+		logoUrl: "",
 		description: "",
 		fundingNeeded: "",
 		currentFunding: "",
@@ -110,6 +113,10 @@ const RegisterFundeePage = () => {
 
 	const handleDateChange = (date: Date | undefined) => {
 		setFormData((prev) => ({ ...prev, foundingDate: date || null }));
+	};
+
+	const handleLogoChange = (file: File | null) => {
+		setFormData((prev) => ({ ...prev, logoFile: file }));
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -184,9 +191,7 @@ const RegisterFundeePage = () => {
 				contact: formData.email,
 				website: formData.website || "unknown",
 				company_description:
-					formData.description ||
-					formData.tagline ||
-					"No description provided",
+					formData.description || "No description provided",
 				headcount: formData.teamSize || "1",
 				project_name: formData.projectName || formData.organizationName,
 				project_description:
@@ -254,6 +259,20 @@ const RegisterFundeePage = () => {
 				"Created fundee with ID:",
 				result.data?.id || "ID not returned"
 			);
+
+			// Upload logo if a file was selected
+			let logoUrl = null;
+			if (formData.logoFile && result.data?.id) {
+				logoUrl = await uploadLogo(formData.logoFile, result.data.id);
+
+				// If logo upload was successful, update the fundee record with the logo URL
+				if (logoUrl) {
+					await api.fundees.update(result.data.id, {
+						logo_url: logoUrl,
+					});
+					console.log("Updated fundee with logo URL:", logoUrl);
+				}
+			}
 
 			// Show success message immediately after creating the profile
 			setIsSuccess(true);
@@ -628,19 +647,22 @@ const RegisterFundeePage = () => {
 
 											<div className="space-y-2">
 												<label
-													htmlFor="tagline"
+													htmlFor="logo"
 													className="text-sm font-semibold text-foreground/80"
 												>
-													Tagline
+													Organization Logo
 												</label>
-												<Input
-													id="tagline"
-													name="tagline"
-													value={formData.tagline}
-													onChange={handleInputChange}
-													placeholder="A short tagline for your organization"
-													className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+												<FileUpload
+													onFileChange={
+														handleLogoChange
+													}
+													className="h-52"
 												/>
+												<p className="text-xs text-muted-foreground mt-1">
+													Upload your organization's
+													logo (PNG, JPG or GIF up to
+													2MB)
+												</p>
 											</div>
 										</div>
 

@@ -23,6 +23,10 @@ const Fundee = sequelize.define(
 			type: DataTypes.STRING(255),
 			allowNull: false,
 		},
+		logo_url: {
+			type: DataTypes.STRING(255),
+			defaultValue: null,
+		},
 		company_description: {
 			type: DataTypes.TEXT,
 			allowNull: false,
@@ -49,7 +53,7 @@ const Fundee = sequelize.define(
 		},
 		project_status: {
 			type: DataTypes.STRING(255),
-			defaultValue: 'New',
+			defaultValue: "New",
 		},
 		method: {
 			type: DataTypes.BOOLEAN,
@@ -161,52 +165,54 @@ const Funders = sequelize.define(
 	}
 );
 
-
-const mCDR_trials = sequelize.define('mcdr_trials', {
-    id: {
-      type: DataTypes.INTEGER,
-      defaultValue: DataTypes.INTEGER,
-      autoIncrement: true,
-      allowNull: false,
-      primaryKey: true
-    },
-    trial_name: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },  
-    leading_organization: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    other_leading_organization: {
-      type: DataTypes.STRING
-    },
-    organization_type: {
-      type: DataTypes.STRING
-    },
-    all_cdr_methods: { //provide
-        type: DataTypes.STRING
-    },
-    collaborators: {
-        type: DataTypes.STRING
-    },
-    mrv_provider: {
-        type: DataTypes.STRING
-    },
-    mrv_strategy: {
-      type: DataTypes.STRING
-    },
-    monitoring_platforms: {
-      type: DataTypes.STRING
-    },
-    measurements: {
-      type: DataTypes.STRING
-    },
-},
-{
-  timestamps: false,
-  tableName: 'mcdr_trials'
-});
-
+const mCDR_trials = sequelize.define(
+	"mcdr_trials",
+	{
+		id: {
+			type: DataTypes.INTEGER,
+			defaultValue: DataTypes.INTEGER,
+			autoIncrement: true,
+			allowNull: false,
+			primaryKey: true,
+		},
+		trial_name: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		leading_organization: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		other_leading_organization: {
+			type: DataTypes.STRING,
+		},
+		organization_type: {
+			type: DataTypes.STRING,
+		},
+		all_cdr_methods: {
+			//provide
+			type: DataTypes.STRING,
+		},
+		collaborators: {
+			type: DataTypes.STRING,
+		},
+		mrv_provider: {
+			type: DataTypes.STRING,
+		},
+		mrv_strategy: {
+			type: DataTypes.STRING,
+		},
+		monitoring_platforms: {
+			type: DataTypes.STRING,
+		},
+		measurements: {
+			type: DataTypes.STRING,
+		},
+	},
+	{
+		timestamps: false,
+		tableName: "mcdr_trials",
+	}
+);
 
 export { Fundee, Funders, mCDR_trials };

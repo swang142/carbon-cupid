@@ -3,6 +3,7 @@ CREATE TABLE fundeetable (
     longitude FLOAT NOT NULL,
     latitude FLOAT NOT NULL,
     company_name VARCHAR(255) NOT NULL,
+    logo_url VARCHAR(255) DEFAULT NULL,
     company_description TEXT NOT NULL,
     website VARCHAR(255) DEFAULT 'unknown',
     contact VARCHAR(255) DEFAULT 'unknown',
