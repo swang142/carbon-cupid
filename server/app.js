@@ -5,7 +5,8 @@ import { supabase } from "./config/database.js";
 import fundeeRoutes from "./routes/fundeeRoutes.js";
 import funderRoutes from "./routes/funderRoutes.js";
 import mcdrRoutes from "./routes/mcdrRoutes.js";
-import { Fundee } from "./models/models.js";
+import { Fundee, Funders } from "./models/models.js";
+
 import axios from "axios";
 
 const app = express();
@@ -67,9 +68,31 @@ app.get("/api/calc-base-scores/:id", async (req, res) => {
 });
 
 // //called when funder makes query
-// app.get("/api/risk-score", async (req, res) => {
+app.post("/api/calc-dynamic-scores", async (req, res) => {
+    const { fundee_id, funder_id, funder_query } = req.body;
+    try {
+        const fundee = await Fundee.findByPk(fundee_id);
+        const funder = await Funders.findByPk(funder_id);
+        const data_reformatted = {
+            fundee_description : fundee.dataValues.company_description,
+            funder_description : funder.dataValues.company_description + funder_query,
+            fundee_location: [fundee.dataValues.longitude, fundee.dataValues.latitude],
+            funder_location: [funder.dataValues.longitude, funder.dataValues.latitude],
+            funder_capability: fundee.dataValues.funding_requested - funder.dataValues.current_funding,
+            fundee_needs: fundee.dataValues.current_funding,
+        }
 
-// })
+        const goal_alignment = await axios.post("http://127.0.0.1:5000/api/goal-alignment", data_reformatted);
+        const location_match = await axios.post("http://127.0.0.1:5000/api/location-match", data_reformatted);
+        const funding_capability_match = await axios.post("http://127.0.0.1:5000/api/funding-capability-match", data_reformatted);
+
+        res.status(200).send([goal_alignment.data, location_match.data, funding_capability_match.data])
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: "Failed to fetch dynamic scores" });
+    }
+})
 
 
 sequelize.authenticate()
