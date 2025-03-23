@@ -148,17 +148,26 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full flex justify-between bg-background/50 p-3 h-auto"
+                    className="w-full h-auto px-2 py-3 text-sm font-normal justify-start items-start"
                   >
-                    <span className="font-medium break-words">{category.name}</span>
+                    <span className="w-4 h-4 mr-2 mt-1 shrink-0 flex items-center justify-center" />
+                    
+                    <div className="flex flex-col flex-1 text-left">
+                      <span className="font-medium break-words whitespace-normal">
+                        {category.name}
+                      </span>
+                    </div>
+
                     <ChevronDown
                       className={cn(
-                        "h-4 w-4 transition-transform duration-200",
+                        "ml-2 shrink-0 h-4 w-4 transition-transform duration-200",
                         isOpen[category.id] && "transform rotate-180"
                       )}
                     />
                   </Button>
                 </CollapsibleTrigger>
+
+
                 <CollapsibleContent className="bg-background/30 rounded-b-md p-2">
                   <div className="grid grid-cols-1 gap-1 flex-wrap">
                     {category.options.map((option) => {
@@ -169,16 +178,15 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                           variant="ghost"
                           size="sm"
                           className={cn(
-                            "justify-start px-2 text-sm font-normal w-full h-auto items-start", // items-start aligns checkbox and text to the top
+                            "justify-start px-2 text-sm font-normal w-full h-auto items-start",
                             isSelected && "bg-primary/10 text-primary"
                           )}
                           style={{
-                            whiteSpace: "normal",       // Allow text to wrap
-                            wordBreak: "break-word",    // Force wrap on long words
+                            whiteSpace: "normal", 
+                            wordBreak: "break-word",
                           }}
                           onClick={() => toggleFilter(category.id, option)}
                         >
-                          {/* Checkbox Icon - keep fixed size and prevent shrinking */}
                           <span
                             className={cn(
                               "w-4 h-4 mr-2 mt-1 shrink-0 rounded border flex items-center justify-center",
@@ -187,8 +195,6 @@ export function FundeeFilter({ onFiltersChange }: { onFiltersChange: (filters: R
                           >
                             {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
                           </span>
-
-                          {/* Wrapping Text */}
                           <span className="flex-1 break-words text-left">{option}</span>
                         </Button>
 
