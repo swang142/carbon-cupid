@@ -5,22 +5,39 @@ import math
 import pandas as pd
 from flask_cors import CORS
 import time
-import os
-import google.generativeai as genai
 from dotenv import load_dotenv
+import os
 
-# Load the .env file (change 'secret.env' to your custom filename)
+# Update your imports
+from google import genai  # This is the correct import
+
+
+# Load environment variables first
 load_dotenv(dotenv_path='secret.env')
+
+
+# Get the API key
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print(f"API Key loaded: {'Yes' if GEMINI_API_KEY else 'No'}")
+
+# Import Gemini and initialize client (only once)
+from google import genai
+client = genai.Client(api_key=GEMINI_API_KEY)
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for Express.js frontend integration
 
 # Set your Gemini API key
 # IMPORTANT: For production, use environment variables instead of hardcoding
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_API_KEY = os.getenv(GEMINI_API_KEY)
 
-# Configure the Gemini API with your key
-genai.configure(api_key=GEMINI_API_KEY)
+# # Configure the Gemini API with your key
+# genai.configure(api_key=GEMINI_API_KEY)
+
+# Initialize the Gemini client
+client = genai.Client(api_key="GEMINI_API_KEY")  # Replace with your actual API key
+
 
 # Initialize the embedding model
 def initialize_gemini():
@@ -232,31 +249,40 @@ def calculate_impact_score(total_credits):
     
     return impact_score
 
-# 4) Goal Alignment Score (Cosine Similarity)
+# Update the get_embedding function to use the latest API
 def get_embedding(text):
-    """Generate embeddings using Google's Gemini model"""
+    """Generate embeddings using Google's Gemini embedding model"""
     print(f"Generating embedding for text: '{text[:50]}...' (truncated)")
     start_time = time.time()
-    
+
     try:
-        # Using Gemini's embedding model
-        embedding_model = genai.get_model("models/embedding-001")
-        result = embedding_model.embed_content(
-            task_type="retrieval_document",
-            content=text
+        # Use the current recommended Gemini embedding model
+        result = client.models.embed_content(
+            model="gemini-embedding-exp-03-07",  # Latest experimental embedding model
+            contents=text
         )
-        
-        embedding = np.array(result["embedding"])
+
+        # Access the embeddings from the result
+        embedding = np.array(result.embeddings)
         elapsed = time.time() - start_time
         print(f"Embedding generated successfully (time: {elapsed:.2f}s, dimensions: {embedding.shape})")
         
-        # Return the embedding values
         return embedding
     except Exception as e:
         print(f"Error generating embedding: {str(e)}")
-        print("Returning zero vector as fallback")
-        # Return a zero vector as fallback
-        return np.zeros(768)  # Typical embedding dimension
+        print("Returning fallback embedding")
+        
+        # Create deterministic fallback embedding
+        import hashlib
+        hash_obj = hashlib.md5(text.encode())
+        seed = int(hash_obj.hexdigest(), 16) % (2**32)
+        np.random.seed(seed)
+        
+        # Create normalized random vector
+        embedding = np.random.randn(768)
+        embedding = embedding / np.linalg.norm(embedding)
+        
+        return embedding
 
 def calculate_goal_alignment(funder_description, fundee_description):
     """Calculate alignment between funder and fundee based on their descriptions"""
